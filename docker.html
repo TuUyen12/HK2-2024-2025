@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng hợp kiến thức Docker & Docker Swarm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        h1, h2, h3 {
+            color: #f9fafb; /* text-gray-50 */
+            font-weight: 600;
+        }
+        h2 {
+            border-bottom: 2px solid #374151; /* border-gray-700 */
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+        }
+        code {
+            background-color: #374151; /* bg-gray-700 */
+            color: #facc15; /* text-yellow-400 */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+        pre code {
+            display: block;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .pro-con-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .pro-con-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        blockquote {
+            border-left: 4px solid #3b82f6; /* border-blue-500 */
+            padding-left: 1rem;
+            margin-left: 0;
+            font-style: italic;
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        .tag {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-300">
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-300">Tổng hợp kiến thức Docker & Docker Swarm</h1>
+            <p class="text-lg text-gray-400">Tài liệu ôn tập cho bài kiểm tra cuối kỳ và phỏng vấn</p>
+        </header>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Giới thiệu về Docker & Docker Swarm</h2>
+            <p class="mb-4">Kubernetes và Docker làm việc cùng nhau để xây dựng và chạy các ứng dụng được đóng gói (containerized applications).</p>
+            <h3 class="text-xl font-semibold mb-2">Các kiểu triển khai ứng dụng:</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>Triển khai truyền thống</li>
+                <li>Triển khai ảo hóa</li>
+                <li>Triển khai container</li>
+                <li>Triển khai Kubernetes</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Kiến trúc Monolithic (Monolithic Architecture)</h2>
+            <p class="mb-4">Kiến trúc Monolithic được xem là đơn giản để phát triển, kiểm tra, triển khai và mở rộng (scale).</p>
+            
+            <h3 class="text-xl font-semibold mb-2">Vấn đề:</h3>
+            <ul class="list-disc list-inside space-y-1 mb-4">
+                <li>Mỗi dịch vụ có yêu cầu về phụ thuộc khác nhau.</li>
+                <li>Thời gian thiết lập (setup) dài.</li>
+                <li>Môi trường phát triển/kiểm thử/sản xuất (Dev/Test/Prod) khác nhau.</li>
+                <li>Hình ảnh "The Matrix from Hell" minh họa sự phức tạp của các phụ thuộc chéo.</li>
+            </ul>
+
+            <div class="pro-con-grid">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-green-400">Ưu điểm (Pros)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Đơn giản để phát triển.</li>
+                        <li>Đơn giản để triển khai – chỉ một tệp nhị phân (binary).</li>
+                        <li>Dễ dàng gỡ lỗi (debugging) và theo dõi lỗi.</li>
+                        <li>Đơn giản để kiểm tra.</li>
+                        <li>Chi phí thấp hơn.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-red-400">Nhược điểm (Cons)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Khó hiểu và khó sửa đổi.</li>
+                        <li>Gắn kết chặt chẽ (tightly coupled).</li>
+                        <li>Thời gian khởi động và tải (load times) cao hơn.</li>
+                        <li>Phải triển khai lại toàn bộ ứng dụng trên mỗi lần cập nhật.</li>
+                        <li>Kém tin cậy hơn: Một lỗi nhỏ có thể làm sập toàn bộ ứng dụng.</li>
+                        <li>Khó mở rộng (scaling) ứng dụng.</li>
+                        <li>Khó áp dụng công nghệ mới.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Kiến trúc Microservices</h2>
+            <p>Tài liệu trình bày một sơ đồ kiến trúc Microservices với API Gateway, các dịch vụ riêng lẻ như Account Service, Inventory Service, Shipping Service và các cơ sở dữ liệu (DB) tương ứng của chúng.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Microservices trên Máy ảo (VMs)</h2>
+            <h3 class="text-xl font-semibold mb-2">Hypervisor</h3>
+            <blockquote class="mb-4">
+                Là phần mềm tạo và chạy các máy ảo (VMs), còn được gọi là guests. Nó cô lập hệ điều hành và tài nguyên của hypervisor khỏi các máy ảo, đồng thời cho phép tạo và quản lý các VM đó.
+            </blockquote>
+            <h4 class="font-semibold mb-2">Có hai loại hypervisor:</h4>
+            <ul class="list-disc list-inside space-y-2 mb-4">
+                <li><strong>Type 1 ("bare metal"):</strong> Chạy trực tiếp trên phần cứng của máy chủ. Ví dụ: <code>Microsoft Hyper-V</code>, <code>VMware ESXi</code>.</li>
+                <li><strong>Type 2 ("hosted"):</strong> Chạy như một lớp phần mềm trên một hệ điều hành. Ví dụ: <code>VirtualBox</code>, <code>VMware Player</code>.</li>
+            </ul>
+
+            <div class="pro-con-grid mt-6">
+                 <div>
+                    <h3 class="text-xl font-semibold mb-2 text-green-400">Ưu điểm (Pros)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                       <li>Không gắn kết (Decoupled).</li>
+                       <li>Đảm bảo phân phối và triển khai liên tục.</li>
+                       <li>Kiểm tra tốt hơn.</li>
+                       <li>Triển khai tốt hơn, độc lập.</li>
+                       <li>Không cam kết công nghệ dài hạn.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 text-red-400">Nhược điểm (Cons)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Thời gian khởi động của VM chậm.</li>
+                        <li>Tiêu thụ bộ nhớ tăng lên.</li>
+                        <li>Dấu chân hệ điều hành lớn.</li>
+                        <li>Chi phí ban đầu cao và đòi hỏi kỹ năng chuyên môn.</li>
+                        <li>Kiểm tra khó khăn và tốn thời gian.</li>
+                        <li>Phức tạp trong triển khai và quản lý.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Containers</h2>
+             <p class="mb-4">
+                <strong>Trước Docker:</strong> Một nhà phát triển gửi mã cho người kiểm tra, nhưng nó không chạy trên hệ thống của người kiểm tra do các vấn đề về phụ thuộc khác nhau.
+            </p>
+            <p class="mb-4">
+                <strong>Sau Docker:</strong> Người kiểm tra và nhà phát triển giờ đây có cùng một hệ thống chạy trên Docker container, giải quyết các vấn đề về sự khác biệt môi trường.
+            </p>
+            <h3 class="text-xl font-semibold mb-2">Định nghĩa Docker</h3>
+            <blockquote>
+                 Docker là một công cụ phát triển phần mềm và công nghệ ảo hóa giúp dễ dàng phát triển, triển khai và quản lý ứng dụng bằng cách sử dụng các container.
+            </blockquote>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Định nghĩa Container</h3>
+            <blockquote>
+                 Một gói phần mềm nhẹ, độc lập, có thể thực thi, chứa tất cả các thư viện, tệp cấu hình, phụ thuộc và các phần cần thiết khác để vận hành ứng dụng.
+            </blockquote>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">So sánh VMs và Docker Containers</h2>
+            <div class="pro-con-grid">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">Máy ảo (Virtual Machine)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Cô lập cấp độ phần cứng.</li>
+                        <li>Có hệ điều hành riêng.</li>
+                        <li>Khởi động trong vài phút.</li>
+                        <li>Kích thước vài GB.</li>
+                        <li>Sử dụng nhiều tài nguyên hơn.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">Docker Container</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Cô lập cấp độ hệ điều hành.</li>
+                        <li>Chia sẻ hệ điều hành.</li>
+                        <li>Khởi động trong vài giây.</li>
+                        <li>Nhẹ (KBs/MBs).</li>
+                        <li>Sử dụng ít tài nguyên hơn.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Kiến trúc Docker</h2>
+            <p class="mb-2">Docker sử dụng kiến trúc client-server (khách-chủ).</p>
+            <p class="mb-2">Docker client giao tiếp với Docker daemon qua REST API. Daemon thực hiện việc xây dựng, chạy và phân phối các Docker container.</p>
+            <h3 class="text-xl font-semibold mb-2 mt-4">Các thành phần:</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>Client</li>
+                <li>Daemon</li>
+                <li>Host (chứa Images và Containers)</li>
+                <li>Registry</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Cài đặt Docker</h2>
+            <p class="mb-2">Docker có sẵn cho Windows, MAC, và Linux.</p>
+            <p>Có thể sử dụng trình giả lập trực tuyến: <a href="http://labs.play-with-docker.com" target="_blank" class="text-blue-400 hover:underline">labs.play-with-docker.com</a></p>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Các lệnh Docker cơ bản</h2>
+            <ul class="space-y-2">
+                <li><code>docker version</code>: Hiển thị phiên bản Docker.</li>
+                <li><code>docker info</code>: Cung cấp thông tin chi tiết về cài đặt Docker.</li>
+                <li><code>docker help</code>: Hiển thị danh sách các lệnh Docker.</li>
+                <li><code>docker image ls</code>: Liệt kê tất cả các Docker image trên hệ thống.</li>
+                <li><code>docker image --help</code>: Hiển thị các lệnh con liên quan đến quản lý image.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Images & Containers</h2>
+            <h3 class="text-xl font-semibold mb-2">Docker Image</h3>
+            <blockquote>Là một khuôn mẫu (template) chỉ đọc, chứa các tệp nhị phân ứng dụng và các phụ thuộc. Được sử dụng để tạo Docker container.</blockquote>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Docker Container</h3>
+            <blockquote>Là một phiên bản đang chạy của Docker image, chứa toàn bộ gói cần thiết để chạy ứng dụng.</blockquote>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Union File System và Copy-on-Write (COW)</h2>
+            <p class="mb-2">Docker image là khuôn mẫu chỉ đọc. Các thay đổi trong container không lưu vào image mặc định.</p>
+            <p class="mb-2">Khi một container thay đổi một tệp từ image, nó sẽ sao chép tệp đó lên lớp đọc-ghi riêng của nó trước khi thay đổi. Đây là cơ chế <strong>copy-on-write (COW)</strong>.</p>
+            <p>Các tệp và thư mục mới/sửa đổi này được "cam kết" (committed) như một lớp mới. Lệnh <code>docker history</code> hiển thị tất cả các lớp này.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Registry</h2>
+            <p class="mb-2">Là một hệ thống lưu trữ và phân phối Docker image. Mặc định là DockerHub. Có thể chạy private registry tại chỗ (on-premise).</p>
+            <p>Lệnh <code>docker pull ubuntu:19.10</code> được sử dụng để tải một image với một tag cụ thể.</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Các lệnh cơ bản của Docker Container</h2>
+            <pre><code class="language-bash"># Chạy container Nginx ở chế độ foreground
+docker container run nginx
+
+# Chạy container ở chế độ nền (detached)
+docker run --detach nginx
+# hoặc
+docker run -d nginx
+
+# Liệt kê container đang chạy
+docker ps
+
+# Liệt kê tất cả container (kể cả đã dừng)
+docker ps -a
+
+# Kiểm tra thông tin chi tiết của container
+docker container inspect &lt;container-id&gt;
+
+# Ánh xạ cổng 8080 của host tới cổng 80 của container
+docker run -d -p 8080:80 nginx
+
+# Đặt tên cho container
+docker run -d -p 8080:80 --name webhost nginx
+
+# Dừng, khởi động lại, và xóa container
+docker container stop webhost
+docker start webhost
+docker container rm webhost
+
+# Xem logs của container
+docker container logs webhost
+docker container logs -f webhost # Theo dõi logs
+
+# Truy cập shell của container
+docker container run -it ubuntu bash
+docker exec -it webhost bash
+
+# Lưu các thay đổi trong container vào một image mới
+docker commit webhost my-custom-nginx
+</code></pre>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Mạng Docker (Docker Networking)</h2>
+            <p class="mb-4">Docker cung cấp 3 mạng mặc định: <code>bridge</code>, <code>none</code>, và <code>host</code>.</p>
+            
+            <h3 class="text-xl font-semibold mb-2">Bridge Network</h3>
+            <p class="mb-2">Các container nhận IP nội bộ riêng, cô lập khỏi host. Cần port forwarding để truy cập từ bên ngoài. Trên mạng bridge mặc định, các container không thể phân giải DNS bằng tên.</p>
+            <p>Các mạng bridge do người dùng định nghĩa cho phép phân giải DNS bằng tên container.</p>
+            
+            <h3 class="text-xl font-semibold mt-4 mb-2">Host Network</h3>
+            <p class="mb-2">Container chia sẻ network namespace với host. Không có sự cô lập mạng. Có thể gây xung đột cổng.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">None Network</h3>
+            <p class="mb-2">Container chạy trong sự cô lập hoàn toàn, không có giao diện mạng bên ngoài.</p>
+            
+            <h3 class="text-xl font-semibold mt-4 mb-2">Overlay Network</h3>
+            <p class="mb-2">Dùng cho giao tiếp giữa các container trên các host khác nhau (trong một swarm). Trải rộng trên toàn bộ cụm.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Volumes</h2>
+            <p class="mb-4">Dùng để lưu trữ dữ liệu bền vững và chia sẻ dữ liệu giữa host và container.</p>
+            
+            <h3 class="text-xl font-semibold mb-2">Named Volume</h3>
+            <p class="mb-2">Docker quản lý volume, được lưu trữ tại <code>/var/lib/docker/volumes</code>.</p>
+            <pre><code class="language-bash">docker volume create my-vol
+docker run -d --name nginx -v my-vol:/app nginx</code></pre>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">Bind Mount</h3>
+            <p class="mb-2">Gắn một thư mục hoặc tệp từ hệ thống host vào container.</p>
+            <pre><code class="language-bash">docker run --name web -v /path/on/host:/path/in/container nginx</code></pre>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Dockerfile</h2>
+            <blockquote>Dockerfile là một tài liệu văn bản chứa tất cả các lệnh để xây dựng (assemble) một image.</blockquote>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Các lệnh chính trong Dockerfile</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li><code>FROM</code>: Xác định image cơ sở.</li>
+                <li><code>COPY</code>: Sao chép tệp từ host vào image.</li>
+                <li><code>RUN</code>: Chạy các lệnh trong quá trình build image.</li>
+                <li><code>WORKDIR</code>: Đặt thư mục làm việc mặc định.</li>
+                <li><code>EXPOSE</code>: Mở một cổng.</li>
+                <li><code>CMD</code> / <code>ENTRYPOINT</code>: Lệnh chạy khi container khởi động.</li>
+            </ul>
+             <h3 class="text-xl font-semibold mt-4 mb-2">Ví dụ</h3>
+            <pre><code class="language-bash"># Xây dựng image
+docker build -t my-app .
+
+# Chạy container từ image đã build
+docker run -d -p 8080:5000 my-app</code></pre>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Compose</h2>
+            <p class="mb-4">Dùng để định nghĩa và chạy các ứng dụng đa container. Sử dụng tệp YAML (<code>docker-compose.yml</code>) để cấu hình các dịch vụ của ứng dụng.</p>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Các lệnh Docker Compose</h3>
+            <ul class="space-y-2">
+                <li><code>docker-compose up -d</code>: Khởi động ứng dụng.</li>
+                <li><code>docker-compose down</code>: Dừng và xóa ứng dụng.</li>
+                <li><code>docker-compose ps</code>: Hiển thị trạng thái các container.</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Điều phối Container (Container Orchestration)</h2>
+            <blockquote>Là việc quản lý vòng đời của container một cách tự động, đặc biệt trong các môi trường lớn, động. Ví dụ: Docker Swarm, Kubernetes.</blockquote>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Chức năng:</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>Cung cấp và triển khai.</li>
+                <li>Mở rộng (Scaling).</li>
+                <li>Di chuyển container (Migration).</li>
+                <li>Cân bằng tải (Load balancing) và khám phá dịch vụ (service discovery).</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Swarm</h2>
+            <p class="mb-4">Là giải pháp điều phối container tích hợp sẵn của Docker để quản lý một cụm (cluster) các node.</p>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Các lệnh Swarm cơ bản</h3>
+            <pre><code class="language-bash"># Khởi tạo swarm trên node manager
+docker swarm init --advertise-addr &lt;MANAGER_IP&gt;
+
+# Tham gia swarm với vai trò worker
+docker swarm join --token &lt;TOKEN&gt; &lt;MANAGER_IP&gt;:2377
+
+# Liệt kê các node trong swarm
+docker node ls</code></pre>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Service</h2>
+            <p class="mb-4">Trong swarm mode, bạn triển khai ứng dụng dưới dạng các service. Một service là định nghĩa về các tác vụ (tasks) sẽ chạy, ví dụ như image container nào sẽ được sử dụng và số lượng bản sao (replicas).</p>
+            <pre><code class="language-bash"># Tạo một service với 5 replicas
+docker service create --replicas 5 -p 80:80 --name web nginx
+
+# Liệt kê các service
+docker service ls
+
+# Mở rộng một service
+docker service scale web=10
+
+# Cập nhật một service (rolling update)
+docker service update --image nginx:1.19.2 web
+
+# Xóa một service
+docker service rm web</code></pre>
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Docker Stacks</h2>
+            <p class="mb-4">Dùng để triển khai một ngăn xếp ứng dụng hoàn chỉnh cho swarm, tương tự như Docker Compose nhưng dành cho môi trường production/swarm. Sử dụng tệp compose với phần <code>deploy</code>.</p>
+            <pre><code class="language-bash"># Triển khai một stack
+docker stack deploy -c docker-compose.yml myapp
+
+# Liệt kê các stack
+docker stack ls
+
+# Xóa một stack
+docker stack rm myapp</code></pre>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-2xl font-bold mb-4">Cân bằng tải & Routing Mesh</h2>
+            <p class="mb-4">Docker Swarm có một bộ cân bằng tải nội bộ và một routing mesh. Routing mesh cho phép mỗi node trong swarm chấp nhận kết nối trên các cổng được publish cho bất kỳ dịch vụ nào, ngay cả khi không có tác vụ nào chạy trên node đó, sau đó chuyển hướng yêu cầu đến một container đang hoạt động.</p>
+            <p>Để có điểm cuối chung cho người dùng, thường sử dụng một bộ cân bằng tải bên ngoài (External Load Balancer) như <strong>HAProxy</strong>, <strong>Nginx</strong>, hoặc <strong>Traefik</strong> để định tuyến lưu lượng vào cụm swarm.</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

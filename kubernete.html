@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi Chú Kubernetes cho Kiểm Tra & Phỏng Vấn</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: auto;
+        }
+        .toc {
+            position: sticky;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-right: 1px solid #e9ecef;
+            flex-shrink: 0;
+        }
+        .toc h3 {
+            margin-top: 0;
+            color: #0d6efd;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .toc li a {
+            text-decoration: none;
+            color: #495057;
+            display: block;
+            padding: 0.5rem 0;
+            border-left: 3px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .toc li a:hover,
+        .toc li a.active {
+            color: #0d6efd;
+            background-color: #e9ecef;
+            border-left-color: #0d6efd;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+        }
+        section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #212529;
+            font-weight: 600;
+        }
+        h1 {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            padding-bottom: 5px;
+            margin-top: 2.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        h3 {
+             margin-top: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f3f5;
+            font-weight: 600;
+        }
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 1.5rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Courier New", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        code {
+             font-family: "Fira Code", "Courier New", monospace;
+        }
+        .command {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-left: 5px solid #0d6efd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .command strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1em;
+            color: #343a40;
+        }
+        .result {
+            background-color: #f1f3f5;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        .result::before {
+            content: "Kết quả mong đợi:";
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        blockquote {
+            background-color: #fffbe6;
+            border-left: 6px solid #ffc107;
+            padding: 1rem 1.5rem;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            .toc {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="toc">
+            <h3>Mục lục</h3>
+            <ul>
+                <li><a href="#section-1">1. Giới thiệu về Kubernetes</a></li>
+                <li><a href="#section-2">2. So sánh Swarm và Kubernetes</a></li>
+                <li><a href="#section-3">3. Kiến trúc Kubernetes</a></li>
+                <li><a href="#section-4">4. Kubernetes Pods</a></li>
+                <li><a href="#section-5">5. Lệnh Kubernetes</a></li>
+                <li><a href="#section-6">6. Labels và Selectors</a></li>
+                <li><a href="#section-7">7. ReplicaSet</a></li>
+                <li><a href="#section-8">8. Deployments</a></li>
+                <li><a href="#section-9">9. Namespaces</a></li>
+                <li><a href="#section-10">10. Services</a></li>
+                <li><a href="#section-11">11. Ingress</a></li>
+                <li><a href="#section-12">12. Kubernetes Dashboard</a></li>
+                <li><a href="#section-13">13. Kubernetes Volumes</a></li>
+                <li><a href="#section-14">14. Kubernetes Scheduling</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h1>Ghi Chú Kubernetes cho Kiểm Tra & Phỏng Vấn</h1>
+            <p>Chào bạn, đây là bản tổng hợp các thông tin quan trọng từ tài liệu "kubernete.pdf" để giúp bạn chuẩn bị cho bài kiểm tra và phỏng vấn.</p>
+
+            <section id="section-1">
+                <h2>1. Giới thiệu về Kubernetes</h2>
+                <p>Kubernetes (K8s) là một công cụ quản lý container mã nguồn mở. Ban đầu được Google phát triển để quản lý các ứng dụng được đóng gói trong môi trường cluster, sau đó được quyên góp cho CNCF (Cloud Native Computing Foundation) và được viết bằng Golang.</p>
+                <p>Nó cung cấp container runtime, điều phối container (container orchestration), điều phối cơ sở hạ tầng tập trung vào container, các cơ chế tự phục hồi, khám phá dịch vụ (service discovery), cân bằng tải (load balancing) và mở rộng container.</p>
+                
+                <h3>Điều phối Container</h3>
+                <p>Điều phối container tự động hóa việc triển khai, quản lý, mở rộng và kết nối mạng của các container trên toàn cluster. Các tác vụ chính bao gồm:</p>
+                <ul>
+                    <li>Cấu hình và lập lịch container</li>
+                    <li>Cấp phát và triển khai container</li>
+                    <li>Đảm bảo tính sẵn sàng và dư thừa</li>
+                    <li>Mở rộng hoặc loại bỏ container để phân phối tải đồng đều</li>
+                    <li>Di chuyển container giữa các host khi có sự cố</li>
+                    <li>Phân bổ tài nguyên và cân bằng tải dịch vụ</li>
+                </ul>
+
+                <h3>Các bản phân phối Kubernetes được chứng nhận</h3>
+                <ul>
+                    <li><strong>Cloud Managed:</strong> EKS của AWS, AKS của Microsoft và GKE của Google.</li>
+                    <li><strong>Self Managed:</strong> OpenShift của Redhat và Docker Enterprise.</li>
+                    <li><strong>Local dev/test:</strong> Micro K8s của Canonical, Minikube.</li>
+                    <li><strong>Vanilla Kubernetes:</strong> Dự án Kubernetes cốt lõi (baremetal), Kubeadm.</li>
+                    <li><strong>Special builds:</strong> K3s của Rancher, một bản phân phối K8s nhẹ cho các thiết bị Edge.</li>
+                </ul>
+                <p>Trình giả lập trực tuyến để thử nghiệm: <a href="https://labs.play-with-k8s.com/" target="_blank">https://labs.play-with-k8s.com/</a>.</p>
+            </section>
+
+            <section id="section-2">
+                <h2>2. So sánh Swarm và Kubernetes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tính năng</th>
+                            <th>Kubernetes</th>
+                            <th>Docker Swarm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Cài đặt & Cấu hình Cluster</strong></td><td>Cài đặt phức tạp; nhưng khi đã thiết lập, cluster rất mạnh.</td><td>Cài đặt rất đơn giản; nhưng cluster không quá mạnh.</td></tr>
+                        <tr><td><strong>GUI</strong></td><td>Có GUI là Kubernetes Dashboard.</td><td>Không có GUI.</td></tr>
+                        <tr><td><strong>Khả năng mở rộng</strong></td><td>Có khả năng mở rộng cao và mở rộng nhanh.</td><td>Có khả năng mở rộng cao và mở rộng nhanh hơn Kubernetes 5 lần.</td></tr>
+                        <tr><td><strong>Tự động mở rộng</strong></td><td>Có thể tự động mở rộng (Auto-scaling).</td><td>Không thể tự động mở rộng (Auto-scaling).</td></tr>
+                        <tr><td><strong>Cập nhật cuốn chiếu & Khôi phục</strong></td><td>Có thể triển khai cập nhật cuốn chiếu và tự động khôi phục.</td><td>Có thể triển khai cập nhật cuốn chiếu, nhưng không tự động khôi phục.</td></tr>
+                        <tr><td><strong>Data Volumes</strong></td><td>Có thể chia sẻ volume lưu trữ chỉ với các container khác trong cùng Pod.</td><td>Có thể chia sẻ volume lưu trữ với bất kỳ container nào khác.</td></tr>
+                        <tr><td><strong>Ghi nhật ký & Giám sát</strong></td><td>Có sẵn công cụ tích hợp để ghi nhật ký & giám sát.</td><td>Cần sử dụng các công cụ bên thứ 3 như ELK.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section id="section-3">
+                <h2>3. Kiến trúc Kubernetes</h2>
+                <p>Một cluster Kubernetes bao gồm các <strong>Node</strong>. Có hai loại Node:</p>
+                <ul>
+                    <li><strong>Master node(s):</strong> Chứa các thành phần mặt phẳng điều khiển (control plane) và quản lý cluster.</li>
+                    <li><strong>Worker node(s):</strong> Chạy các ứng dụng được đóng gói của bạn.</li>
+                </ul>
+
+                <h3>a. Master Node (Nút điều khiển)</h3>
+                <p>Master chịu trách nhiệm quản lý toàn bộ cluster. Các thành phần chính:</p>
+                <ul>
+                    <li><strong>ETCD:</strong> Kho lưu trữ key-value phân tán lưu trữ toàn bộ trạng thái của cluster.</li>
+                    <li><strong>Scheduler:</strong> Phân phối công việc hoặc container trên các worker node.</li>
+                    <li><strong>API Server (kube-apiserver):</strong> Điểm truy cập chính vào control plane, xác thực và thực thi các lệnh.</li>
+                    <li><strong>Controller Manager:</strong> Bộ não đằng sau quá trình điều phối, chịu trách nhiệm nhận biết và phản ứng khi có sự cố.</li>
+                </ul>
+
+                <h3>b. Worker Node (Nút làm việc)</h3>
+                <p>Worker node chạy các ứng dụng của bạn. Các thành phần chính:</p>
+                <ul>
+                    <li><strong>Kubelet:</strong> Tác nhân tương tác với master, cung cấp thông tin sức khỏe và thực hiện các hành động được yêu cầu.</li>
+                    <li><strong>Kube-proxy:</strong> Đảm bảo lưu lượng mạng được định tuyến đúng cách.</li>
+                    <li><strong>Container Runtime:</strong> Thành phần thực thi các container (ví dụ: Docker, containerd).</li>
+                </ul>
+                
+                <h3>Luồng hoạt động cơ bản</h3>
+                <p>Luồng hoạt động khi chạy lệnh <code>kubectl run nginx --image=nginx --replicas=3</code>:</p>
+                <ol>
+                    <li><code>kubectl</code> gửi lệnh đến <strong>API Server</strong>.</li>
+                    <li><strong>API Server</strong> cập nhật trạng thái mong muốn vào <strong>ETCD</strong>.</li>
+                    <li><strong>Controller Manager</strong> nhận diện và tạo một <strong>ReplicaSet</strong>.</li>
+                    <li><strong>ReplicaSet</strong> tạo 3 định nghĩa Pod và cập nhật trạng thái là 'PENDING' trong <strong>ETCD</strong>.</li>
+                    <li><strong>Scheduler</strong> nhận diện các Pod 'PENDING' và gán chúng cho các <strong>Node</strong> phù hợp.</li>
+                    <li><strong>Kubelet</strong> trên các Worker Node được chọn nhận diện công việc và chỉ thị cho <strong>Container Runtime</strong> tạo Pod.</li>
+                    <li><strong>Kubelet</strong> cập nhật trạng thái Pod là 'CREATING' rồi 'RUNNING' trong <strong>ETCD</strong>.</li>
+                </ol>
+            </section>
+            
+            <section id="section-4">
+                <h2>4. Kubernetes Pods</h2>
+                <p>Pod là đơn vị lập lịch cơ bản và nhỏ nhất trong Kubernetes. Nó đóng gói một hoặc nhiều container.</p>
+                <ul>
+                    <li>Mỗi Pod có một địa chỉ IP duy nhất trong cluster.</li>
+                    <li>Các container trong cùng một Pod chia sẻ cùng volume lưu trữ và tài nguyên mạng, giao tiếp qua <code>localhost</code>.</li>
+                    <li>Cách khuyến nghị là chỉ có <strong>một container trên mỗi Pod</strong>. Pod đa container hiếm khi được sử dụng và có thể gây lãng phí tài nguyên khi mở rộng.</li>
+                    <li><strong>Init container:</strong> là các container chạy đến khi hoàn thành trước khi container chính của Pod bắt đầu.</li>
+                </ul>
+            </section>
+            
+            <section id="section-5">
+                <h2>5. Lệnh Kubernetes</h2>
+                
+                <h3>a. Lệnh Pods</h3>
+                <div class="command">
+                    <strong>Tạo Pod (Cách mệnh lệnh)</strong>
+                    <pre><code># Triển khai một Pod
+kubectl run nginx --image nginx
+
+# Chạy thử (không thực thi)
+kubectl run nginx --image nginx --dry-run=client
+
+# Tạo file YAML từ lệnh
+kubectl run nginx --image nginx --dry-run=client -o yaml > pod-definition.yaml</code></pre>
+                </div>
+                <div class="command">
+                    <strong>Xem thông tin Pod</strong>
+                    <pre><code># Liệt kê tất cả các Pod với thông tin chi tiết
+kubectl get pods -o wide
+
+# Hiển thị thông tin mở rộng của một Pod
+kubectl describe pod &lt;tên-pod&gt;</code></pre>
+                </div>
+                <div class="command">
+                    <strong>Tạo Pod (Cách khai báo)</strong>
+                    <pre><code># Triển khai Pod từ file YAML
+kubectl create -f pod-definition.yml
+
+# Triển khai hoặc cập nhật Pod từ file YAML
+kubectl apply -f pod-definition.yml</code></pre>
+                </div>
+                <div class="command">
+                    <strong>Tương tác với Pods</strong>
+                    <pre><code># Chạy một Pod với shell tương tác
+kubectl exec -it &lt;tên-pod&gt; -- /bin/sh
+
+# Chạy lệnh trong một container cụ thể của Pod
+kubectl exec &lt;tên-pod&gt; -c &lt;tên-container&gt; -- &lt;lệnh&gt;</code></pre>
+                </div>
+                <div class="command">
+                    <strong>Xem nhật ký (logs)</strong>
+                    <pre><code># Hiển thị nhật ký của Pod
+kubectl logs &lt;tên-pod&gt;
+
+# Stream nhật ký của Pod (theo dõi thời gian thực)
+kubectl logs -f &lt;tên-pod&gt;</code></pre>
+                </div>
+
+                <h3>b. Lệnh Deployments</h3>
+                <div class="command">
+                    <strong>Triển khai và Quản lý Deployment</strong>
+                    <pre><code># Tạo Deployment
+kubectl create deployment nginx-deployment --image=nginx
+
+# Liệt kê các Deployment
+kubectl get deployments
+
+# Thay đổi số lượng bản sao (replicas)
+kubectl scale deployment nginx-deployment --replicas=5
+
+# Kiểm tra trạng thái rollout
+kubectl rollout status deployment/nginx-deployment
+
+# Xem lịch sử rollout
+kubectl rollout history deployment/nginx-deployment
+
+# Khôi phục về phiên bản trước đó
+kubectl rollout undo deployment/nginx-deployment</code></pre>
+                </div>
+                
+                <h3>c. Lệnh Services</h3>
+                <div class="command">
+                    <strong>Expose Deployment với Service</strong>
+                    <pre><code># Expose một deployment với loại NodePort
+kubectl expose deployment nginx-deployment --type=NodePort --port=80 --target-port=80 --name=nginx-service
+
+# Liệt kê các Service
+kubectl get services
+
+# Lấy IP của các Node để truy cập từ bên ngoài
+kubectl get nodes -o wide</code></pre>
+                    <blockquote>Để truy cập, sử dụng <code>http://&lt;node-ip&gt;:&lt;node-port&gt;</code>.</blockquote>
+                </div>
+
+                <h3>d. Lệnh Namespaces</h3>
+                <div class="command">
+                    <strong>Làm việc với Namespaces</strong>
+                    <pre><code># Liệt kê tất cả các namespace
+kubectl get namespaces
+
+# Tạo một namespace mới
+kubectl create ns dev
+
+# Triển khai Pod vào namespace dev
+kubectl run nginx --image=nginx -n dev
+
+# Liệt kê tất cả các đối tượng trong một namespace
+kubectl get all -n &lt;tên-namespace&gt;</code></pre>
+                </div>
+            </section>
+            
+            <section id="section-6">
+                 <h2>6. Kubernetes Labels và Selectors</h2>
+                 <p><strong>Labels</strong> là các cặp key/value được gắn vào các đối tượng (Pods, Services, etc.) để nhóm chúng một cách logic.</p>
+                 <p><strong>Selectors</strong> cho phép lọc và chọn các đối tượng dựa trên nhãn của chúng.</p>
+                 <ul>
+                     <li><strong>Equality-based:</strong> Lọc theo key và value chính xác (<code>=</code>, <code>==</code>, <code>!=</code>).</li>
+                     <li><strong>Set-based:</strong> Lọc theo một tập hợp các giá trị (<code>in</code>, <code>notin</code>, <code>exists</code>).</li>
+                 </ul>
+                 <div class="command">
+                    <strong>Ví dụ về Label và Selector</strong>
+                    <pre><code># Gán nhãn cho một Pod
+kubectl label pod nginx-pod environment=production
+
+# Lấy tất cả các Pod có nhãn environment=production
+kubectl get pods -l environment=production</code></pre>
+                 </div>
+            </section>
+            
+            <section id="section-7">
+                <h2>7. Kubernetes ReplicaSet</h2>
+                <p>ReplicaSet đảm bảo rằng một số lượng Pod (replicas) cụ thể luôn chạy. Nó sẽ tự động thay thế các Pod bị lỗi hoặc bị xóa. ReplicaSet sử dụng <strong>set-based selectors</strong>. Tuy nhiên, <strong>Deployment</strong> là cách được khuyến nghị để quản lý ReplicaSet.</p>
+            </section>
+            
+            <section id="section-8">
+                <h2>8. Kubernetes Deployments</h2>
+                <p>Deployment cung cấp các bản cập nhật khai báo cho Pods và ReplicaSets. Bạn mô tả trạng thái mong muốn, và Deployment Controller sẽ thay đổi trạng thái thực tế thành trạng thái mong muốn một cách có kiểm soát.</p>
+                <h3>Chiến lược triển khai (Deployment Strategy)</h3>
+                <ul>
+                    <li><strong>Recreate:</strong> Chấm dứt phiên bản cũ hoàn toàn rồi mới khởi tạo phiên bản mới. Sẽ có thời gian chết (downtime).</li>
+                    <li><strong>RollingUpdate (Mặc định):</strong> Phát hành phiên bản mới một cách từ từ, lần lượt từng Pod một. Không có thời gian chết.
+                        <ul>
+                            <li><code>maxUnavailable</code> (mặc định 25%): Số lượng Pod tối đa có thể không khả dụng trong quá trình rollout.</li>
+                            <li><code>maxSurge</code> (mặc định 25%): Số lượng Pod tối đa có thể được tạo thêm ngoài số lượng mong muốn.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="section-9">
+                <h2>9. Kubernetes Namespaces</h2>
+                <p>Namespaces phân chia một cluster vật lý thành nhiều cluster ảo, giúp cô lập tài nguyên và quản lý quyền truy cập.</p>
+                <p>Các namespace mặc định:</p>
+                <ul>
+                    <li><strong>default:</strong> Namespace mặc định cho các tài nguyên người dùng.</li>
+                    <li><strong>kube-system:</strong> Dành cho các đối tượng được tạo bởi hệ thống Kubernetes.</li>
+                    <li><strong>kube-public:</strong> Dành cho các tài nguyên có thể đọc công khai.</li>
+                    <li><strong>kube-node-lease:</strong> Dành cho các đối tượng lease của node.</li>
+                </ul>
+            </section>
+
+            <section id="section-10">
+                <h2>10. Kubernetes Services</h2>
+                <p>Services cung cấp một điểm cuối (endpoint) ổn định để truy cập một nhóm các Pod. Nó giải quyết vấn đề vòng đời tạm thời và địa chỉ IP thay đổi của Pods.</p>
+                <h3>Các loại Kubernetes Services</h3>
+                <ul>
+                    <li><strong>ClusterIP (Mặc định):</strong> Cung cấp một dịch vụ chỉ có thể truy cập từ bên trong cluster. Hữu ích cho giao tiếp nội bộ (frontend-backend).</li>
+                    <li><strong>NodePort:</strong> Mở một cổng tĩnh trên mỗi Worker Node. Dịch vụ có thể được truy cập từ bên ngoài cluster thông qua <code>&lt;NodeIP&gt;:&lt;NodePort&gt;</code>. Dải cổng hợp lệ: 30000-32767.</li>
+                    <li><strong>LoadBalancer:</strong> Expose dịch vụ ra bên ngoài bằng cách sử dụng bộ cân bằng tải của nhà cung cấp đám mây (AWS, GCP, Azure). Đây là cách tiêu chuẩn để expose dịch vụ ra internet.</li>
+                </ul>
+            </section>
+
+            <section id="section-11">
+                <h2>11. Kubernetes Ingress</h2>
+                <p><strong>Ingress</strong> quản lý truy cập từ bên ngoài vào các dịch vụ trong cluster, thường là HTTP/HTTPS. Nó có thể cung cấp cân bằng tải, kết thúc SSL/TLS và định tuyến dựa trên tên miền hoặc đường dẫn (URL-based routing).</p>
+                <p>Để Ingress hoạt động, cluster phải có một <strong>Ingress Controller</strong> đang chạy (ví dụ: Nginx, Traefik, HAProxy).</p>
+                <p>Lợi ích chính là có thể expose nhiều dịch vụ dưới một địa chỉ IP duy nhất, tiết kiệm chi phí và đơn giản hóa việc quản lý.</p>
+            </section>
+
+            <section id="section-12">
+                <h2>12. Kubernetes Dashboard</h2>
+                <p>Là giao diện người dùng web (Web UI) cho Kubernetes. Nó cho phép bạn triển khai ứng dụng, quản lý tài nguyên cluster và xem thông tin chi tiết mà không cần dùng CLI.</p>
+            </section>
+
+            <section id="section-13">
+                <h2>13. Kubernetes Volumes</h2>
+                <p>Volume cung cấp một cơ chế để lưu trữ dữ liệu bền vững, vượt qua vòng đời của một Pod.
+                <h3>Các loại Kubernetes Volumes</h3>
+                <ul>
+                    <li><strong>emptyDir:</strong> Một thư mục trống được tạo khi Pod được gán cho Node. Dữ liệu sẽ bị xóa vĩnh viễn khi Pod bị xóa. Hữu ích cho việc lưu trữ tạm thời hoặc cache.</li>
+                    <li><strong>hostPath:</strong> Gắn một file hoặc thư mục từ hệ thống file của host node vào Pod. Sử dụng cẩn thận vì nó phụ thuộc vào node cụ thể.</li>
+                    <li><strong>PersistentVolume (PV) và PersistentVolumeClaim (PVC):</strong>
+                        <ul>
+                            <li><strong>PV:</strong> Là một phần lưu trữ trong cluster được quản trị viên cấp phát. Nó là một tài nguyên của cluster.</li>
+                            <li><strong>PVC:</strong> Là một yêu cầu lưu trữ từ người dùng. PVC sẽ "claim" một PV phù hợp. Điều này tách biệt việc quản lý lưu trữ khỏi việc sử dụng lưu trữ.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="section-14">
+                <h2>14. Kubernetes Scheduling</h2>
+                <p>Bộ lập lịch (Scheduler) của Kubernetes tự động gán Pod cho các Node. Tuy nhiên, có thể ảnh hưởng đến quyết định này bằng các cơ chế sau:</p>
+                <ul>
+                    <li><strong>nodeSelector:</strong> Cách đơn giản nhất để ràng buộc Pod chỉ chạy trên các Node có nhãn cụ thể.</li>
+                    <li><strong>Node Affinity:</strong> Giống nodeSelector nhưng biểu cảm hơn, hỗ trợ các quy tắc "mềm" (ưu tiên) và "cứng" (bắt buộc).</li>
+                    <li><strong>Taints và Tolerations:</strong>
+                        <ul>
+                            <li><strong>Taint:</strong> Được áp dụng cho Node, cho phép Node "đẩy lùi" các Pod không chấp nhận nó.</li>
+                            <li><strong>Toleration:</strong> Được áp dụng cho Pod, cho phép Pod được lập lịch trên các Node có Taint tương ứng.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="command">
+                    <strong>Ví dụ về Taint và Toleration</strong>
+                    <pre><code># Gán một Taint cho node, hiệu ứng là không lập lịch Pod mới
+kubectl taint nodes k8s-slave01 app=blue:NoSchedule
+
+# Một Pod cần có Toleration sau trong spec để được lập lịch trên node đó:
+# tolerations:
+# - key: "app"
+#   operator: "Equal"
+#   value: "blue"
+#   effect: "NoSchedule"
+</code></pre>
+                </div>
+            </section>
+            
+            <p>Hy vọng những thông tin này sẽ giúp bạn rất nhiều trong việc ôn tập và chuẩn bị cho bài kiểm tra và phỏng vấn!</p>
+
+        </main>
+    </div>
+    
+    <script>
+        // Script để làm nổi bật mục lục đang xem
+        window.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.getAttribute('id');
+                    const tocLink = document.querySelector(`.toc li a[href="#${id}"]`);
+                    if (entry.isIntersecting) {
+                        document.querySelectorAll('.toc li a').forEach(link => link.classList.remove('active'));
+                        if(tocLink) tocLink.classList.add('active');
+                    }
+                });
+            }, { rootMargin: "-30% 0px -70% 0px" });
+
+            document.querySelectorAll('section[id]').forEach((section) => {
+                observer.observe(section);
+            });
+        });
+    </script>
+
+</body>
+</html>

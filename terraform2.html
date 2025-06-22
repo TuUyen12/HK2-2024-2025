@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng hợp kiến thức về Terraform</title>
+    <style>
+        :root {
+            --primary-color: #623CE7;
+            --secondary-color: #f4f7f6;
+            --text-color: #333;
+            --header-color: #2c3e50;
+            --nav-bg: #34495e;
+            --nav-text: #ecf0f1;
+            --nav-hover: #4e6a85;
+            --code-bg: #eef1f3;
+            --border-color: #ddd;
+            --scroll-padding: 80px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--scroll-padding);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        #navbar {
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: var(--nav-bg);
+            color: var(--nav-text);
+            overflow-y: auto;
+            border-right: 2px solid var(--primary-color);
+        }
+
+        #navbar header {
+            font-size: 1.8em;
+            text-align: center;
+            padding: 20px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--nav-hover);
+        }
+
+        #navbar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #navbar li {
+            border-bottom: 1px solid var(--nav-hover);
+        }
+        
+        #navbar .sub-menu {
+            padding-left: 20px;
+            font-size: 0.9em;
+        }
+
+        #navbar .sub-menu li a {
+            padding-left: 30px;
+        }
+
+        #navbar a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--nav-text);
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #navbar a:hover {
+            background-color: var(--nav-hover);
+            color: white;
+        }
+        
+        #navbar a.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        #main-doc {
+            margin-left: 280px;
+            padding: 30px 40px;
+            width: calc(100% - 360px);
+        }
+
+        .main-section {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+        
+        .main-section:last-child {
+            border-bottom: none;
+        }
+
+        h1, h2, h3 {
+            color: var(--header-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 2em; }
+        h3 { font-size: 1.5em; border-bottom-style: dashed; }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid var(--primary-color);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        pre code {
+            padding: 0;
+            background: none;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--header-color);
+            color: white;
+        }
+        
+        /* CSS cho sơ đồ thay thế hình ảnh */
+        .diagram-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .diagram-box {
+            display: inline-block;
+            padding: 15px 25px;
+            border-radius: 5px;
+            margin: 10px;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+        .box-main {
+            background-color: #3498db; /* Blue */
+        }
+        .box-sub {
+            background-color: #e67e22; /* Orange */
+        }
+        .diagram-subs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .diagram-box.box-main::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -30px;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #95a5a6;
+        }
+         .diagram-subs::before {
+            content: '';
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: -20px;
+            height: 2px;
+            background: #95a5a6;
+        }
+        .diagram-box.box-sub::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -20px;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 20px;
+            background: #95a5a6;
+        }
+
+
+        @media (max-width: 800px) {
+            body {
+                flex-direction: column;
+            }
+            #navbar {
+                position: static;
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+                border-right: none;
+                border-bottom: 2px solid var(--primary-color);
+            }
+            #main-doc {
+                margin-left: 0;
+                width: auto;
+                padding: 20px;
+            }
+            html {
+                scroll-padding-top: 20px;
+            }
+            .diagram-subs {
+                flex-direction: column;
+            }
+            .diagram-subs::before, .diagram-box.box-sub::before, .diagram-box.box-main::after {
+                display: none; /* Tắt đường kẻ trên mobile để đơn giản */
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <header>Terraform</header>
+        <ul>
+            <li><a href="#introduction">Giới thiệu</a></li>
+            <li>
+                <a href="#variables">Các loại Biến</a>
+                <ul class="sub-menu">
+                    <li><a href="#input_variables">Biến đầu vào (Input)</a></li>
+                    <li><a href="#output_variables">Giá trị đầu ra (Output)</a></li>
+                    <li><a href="#local_variables">Biến cục bộ (Local)</a></li>
+                </ul>
+            </li>
+            <li><a href="#variable_precedence">Thứ tự ưu tiên Biến</a></li>
+            <li>
+                <a href="#loops_and_conditionals">Vòng lặp & Logic điều kiện</a>
+                <ul class="sub-menu">
+                    <li><a href="#iterations">Vòng lặp</a></li>
+                    <li><a href="#conditionals">Logic điều kiện</a></li>
+                </ul>
+            </li>
+            <li><a href="#data_sources">Nguồn dữ liệu (Data Sources)</a></li>
+            <li><a href="#operators">Toán tử (Operators)</a></li>
+            <li><a href="#meta_arguments">Siêu tham số (Meta-Args)</a></li>
+            <li><a href="#security">Bảo mật & Thông tin nhạy cảm</a></li>
+            <li><a href="#tips_and_issues">Mẹo & Lỗi thường gặp</a></li>
+        </ul>
+    </nav>
+
+    <main id="main-doc">
+        <h1>Tổng hợp kiến thức về Terraform</h1>
+
+        <section class="main-section" id="introduction">
+            <h2>Giới thiệu</h2>
+            <p>Terraform là một công cụ Infrastructure as Code (IaC) mã nguồn mở, cho phép bạn định nghĩa và cung cấp hạ tầng trung tâm dữ liệu bằng một ngôn ngữ cấu hình cấp cao, khai báo. Cuộc trò chuyện này đã bao gồm nhiều khía cạnh của Terraform, từ các khái niệm cơ bản đến các kỹ thuật nâng cao.</p>
+        </section>
+
+        <section class="main-section" id="variables">
+            <h2>Các loại Biến trong Terraform</h2>
+            <p>Biến là một cách để định nghĩa các giá trị có thể tái sử dụng và được kiểm soát tập trung. Terraform có 3 loại biến chính:</p>
+            
+            <div class="diagram-container">
+                <div class="diagram-box box-main">Các biến trong Terraform</div>
+                <div class="diagram-subs">
+                    <div class="diagram-box box-sub">Biến đầu vào (Input)</div>
+                    <div class="diagram-box box-sub">Giá trị đầu ra (Output)</div>
+                    <div class="diagram-box box-sub">Giá trị cục bộ (Local)</div>
+                </div>
+            </div>
+            
+            <h3 id="input_variables">Biến đầu vào (Input Variables)</h3>
+            <p>Đóng vai trò như các tham số cho một module, cho phép tùy chỉnh mà không cần thay đổi mã nguồn. Chúng được khai báo bằng khối <code>variable</code>.</p>
+            <p>Các tham số tùy chọn trong khối <code>variable</code>:</p>
+            <ul>
+                <li><code>default</code>: Một giá trị mặc định, giúp biến trở thành tùy chọn.</li>
+                <li><code>type</code>: Chỉ định kiểu giá trị được chấp nhận cho biến (ví dụ: <code>string</code>, <code>number</code>, <code>list</code>, <code>map</code>, <code>bool</code>).</li>
+                <li><code>description</code>: Mô tả về biến.</li>
+                <li><code>validation</code>: Một khối để định nghĩa các quy tắc xác thực.</li>
+                <li><code>sensitive</code>: Hạn chế việc hiển thị giá trị của biến trên giao diện.</li>
+            </ul>
+            <pre><code class="language-hcl">variable "vpc_cidr_block" {
+  description = "Khối CIDR cho VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}</code></pre>
+
+            <h3 id="output_variables">Giá trị đầu ra (Output Variables)</h3>
+            <p>Giống như các giá trị trả về của một module. Chúng được dùng để hiển thị các thông tin quan trọng cho người dùng sau khi hạ tầng được tạo, hoặc để truyền dữ liệu giữa các module.</p>
+            <p>Khai báo bằng khối <code>output</code>:</p>
+            <pre><code class="language-hcl">output "instance_ip_addr" {
+  description = "Địa chỉ IP của máy ảo"
+  value       = aws_instance.server.private_ip
+}</code></pre>
+            <p>Sau khi chạy <code>terraform apply</code>, bạn có thể xem các giá trị này bằng lệnh <code>terraform output</code>.</p>
+
+            <h3 id="local_variables">Biến cục bộ (Local Variables)</h3>
+            <p>Là các biến có phạm vi cục bộ trong một module. Chúng được dùng để gán một tên cho một biểu thức phức tạp hoặc một giá trị được lặp lại nhiều lần, giúp mã nguồn sạch sẽ hơn. Chúng được khai báo trong khối <code>locals</code> và không thể được ghi đè từ bên ngoài.</p>
+            <pre><code class="language-hcl">locals {
+  common_tags = {
+    Owner   = "DevOpsTeam"
+    Service = "WebApp"
+  }
+}
+
+resource "aws_instance" "server" {
+  # ...
+  tags = local.common_tags
+}</code></pre>
+        </section>
+
+        <section class="main-section" id="variable_precedence">
+            <h2>Thứ tự ưu tiên của Biến</h2>
+            <p>Terraform nạp các giá trị biến từ nhiều nguồn khác nhau. Thứ tự ưu tiên (từ cao đến thấp) như sau:</p>
+            <ol>
+                <li>Cờ dòng lệnh (<code>-var</code> và <code>-var-file</code>)</li>
+                <li>Các tệp <code>*.auto.tfvars</code> hoặc <code>*.auto.tfvars.json</code></li>
+                <li>Tệp <code>terraform.tfvars</code> hoặc <code>terraform.tfvars.json</code></li>
+                <li>Biến môi trường (<code>TF_VAR_&lt;name&gt;</code>)</li>
+                <li>Giá trị <code>default</code> bên trong khối <code>variable</code></li>
+            </ol>
+            <p>Bạn có thể tham khảo sơ đồ trực quan về thứ tự ưu tiên trong các hình ảnh chúng ta đã thảo luận.</p>
+        </section>
+
+        <section class="main-section" id="loops_and_conditionals">
+            <h2>Vòng lặp & Logic điều kiện</h2>
+
+            <h3 id="iterations">Vòng lặp (Iterations)</h3>
+            <p>Terraform cung cấp các cơ chế để tạo nhiều tài nguyên mà không cần lặp lại mã.</p>
+            <ul>
+                <li><strong><code>count</code></strong>: Tạo ra một số lượng tài nguyên cố định dựa trên một con số. Hữu ích khi các tài nguyên giống hệt nhau.</li>
+                <li><strong><code>for_each</code></strong>: Tạo tài nguyên dựa trên các phần tử của một `map` hoặc `set`. Đây là phương pháp linh hoạt và an toàn hơn, được khuyên dùng khi mỗi tài nguyên có cấu hình riêng.</li>
+                <li><strong>Biểu thức <code>for</code></strong>: Dùng để biến đổi dữ liệu (ví dụ: lọc một danh sách, thay đổi giá trị của map) chứ không trực tiếp tạo tài nguyên.</li>
+            </ul>
+            <pre><code class="language-hcl"># Ví dụ với for_each
+resource "aws_iam_user" "the-users" {
+  for_each = toset(["Todd", "James", "Alice"])
+  name     = each.key
+}</code></pre>
+
+            <h3 id="conditionals">Logic điều kiện (Conditioning)</h3>
+            <ul>
+                <li><strong>Biểu thức điều kiện (Toán tử ba ngôi)</strong>: Dùng để chọn một trong hai giá trị dựa trên một điều kiện boolean. Cú pháp: <code>điều_kiện ? giá_trị_nếu_đúng : giá_trị_nếu_sai</code>.</li>
+                <li><strong><code>depends_on</code></strong>: Dùng để tạo ra các phụ thuộc tường minh giữa các tài nguyên, khi Terraform không thể tự động phát hiện ra chúng.</li>
+            </ul>
+            <pre><code class="language-hcl"># Ví dụ với biểu thức điều kiện
+variable "is_production" { type = bool }
+
+resource "aws_instance" "server" {
+  # Nếu là production thì tạo 2 máy, ngược lại tạo 1 máy
+  count = var.is_production ? 2 : 1
+  # ...
+}</code></pre>
+        </section>
+        
+        <section class="main-section" id="data_sources">
+            <h2>Nguồn dữ liệu (Data Sources)</h2>
+            <p>Nguồn dữ liệu cho phép Terraform tìm nạp thông tin về các tài nguyên đã tồn tại bên ngoài hoặc các dữ liệu do nhà cung cấp dịch vụ công bố. Chúng hoạt động như một cơ chế chỉ đọc (read-only).</p>
+            <p>Ví dụ: Lấy AMI mới nhất của Amazon Linux hoặc lấy danh sách các dải IP của AWS để cấu hình Security Group.</p>
+            <pre><code class="language-hcl"># Lấy dải IP của AWS cho dịch vụ EC2 tại Châu Âu
+data "aws_ip_ranges" "european_ec2" {
+  regions  = ["eu-west-1", "eu-central-1"]
+  services = ["ec2"]
+}
+
+# Sử dụng dữ liệu đó trong một Security Group
+resource "aws_security_group" "from_europe" {
+  name = "from_europe"
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = data.aws_ip_ranges.european_ec2.cidr_blocks
+  }
+}</code></pre>
+        </section>
+
+        <section class="main-section" id="operators">
+            <h2>Toán tử (Operators)</h2>
+            <p>Terraform hỗ trợ nhiều loại toán tử để sử dụng trong các biểu thức:</p>
+            <ul>
+                <li><strong>Toán tử số học</strong>: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (chia lấy dư).</li>
+                <li><strong>Toán tử so sánh bằng</strong>: <code>==</code> (bằng), <code>!=</code> (không bằng).</li>
+                <li><strong>Toán tử so sánh</strong>: <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>.</li>
+                <li><strong>Toán tử logic</strong>: <code>&&</code> (VÀ), <code>||</code> (HOẶC), <code>!</code> (PHỦ ĐỊNH).</li>
+            </ul>
+        </section>
+
+        <section class="main-section" id="meta_arguments">
+            <h2>Siêu tham số (Meta-Arguments)</h2>
+            <p>Đây là các tham số đặc biệt có thể được sử dụng với bất kỳ khối tài nguyên nào để thay đổi hành vi của chúng.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Siêu tham số</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>depends_on</code></td>
+                        <td>Chỉ định các phụ thuộc ẩn mà Terraform không tự phát hiện được.</td>
+                    </tr>
+                    <tr>
+                        <td><code>count</code></td>
+                        <td>Tạo nhiều bản sao của tài nguyên theo một số lượng.</td>
+                    </tr>
+                    <tr>
+                        <td><code>for_each</code></td>
+                        <td>Tạo nhiều bản sao của tài nguyên dựa trên một map hoặc set.</td>
+                    </tr>
+                    <tr>
+                        <td><code>provider</code></td>
+                        <td>Chọn một cấu hình nhà cung cấp không phải là mặc định.</td>
+                    </tr>
+                    <tr>
+                        <td><code>lifecycle</code></td>
+                        <td>Tùy chỉnh vòng đời của tài nguyên (ví dụ: <code>create_before_destroy</code>, <code>prevent_destroy</code>, <code>ignore_changes</code>).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section class="main-section" id="security">
+            <h2>Bảo mật & Thông tin nhạy cảm</h2>
+            <p>Quản lý thông tin nhạy cảm là một phần quan trọng khi làm việc với Terraform.</p>
+            <h3>Các phương pháp tốt nhất:</h3>
+            <ul>
+                <li><strong>Không lưu trữ bí mật trong mã nguồn hoặc tệp trạng thái.</strong> Thay vào đó, hãy sử dụng các dịch vụ quản lý bí mật như AWS Secrets Manager, Azure Key Vault, Google Secret Manager, hoặc HashiCorp Vault.</li>
+                <li><strong>Bảo mật tệp trạng thái (state file)</strong> bằng cách sử dụng backend từ xa có hỗ trợ mã hóa ở trạng thái nghỉ (encryption at rest) như S3, Azure Blob Storage.</li>
+                <li><strong>Mã hóa các tệp <code>.tfvars</code></strong> chứa thông tin nhạy cảm bằng các công cụ như `sops` hoặc `git-crypt`.</li>
+                <li>Sử dụng thuộc tính <code>sensitive = true</code> cho các biến đầu vào (input variables) và giá trị đầu ra (output values) để ngăn chúng hiển thị trên giao diện dòng lệnh.</li>
+                <li>Sử dụng vai trò (IAM Roles) để cấp quyền cho tài nguyên tự truy cập bí mật thay vì truyền bí mật vào chúng.</li>
+            </ul>
+        </section>
+
+        <section class="main-section" id="tips_and_issues">
+            <h2>Mẹo & Lỗi thường gặp</h2>
+            <h3>Các mẹo hữu ích:</h3>
+            <ul>
+                <li>Sử dụng <code>terraform console</code> để thử nghiệm nhanh các biểu thức.</li>
+                <li>Sử dụng <code>terraform output -module=&lt;tên_module&gt;</code> để xem output của một module con.</li>
+                <li>Sử dụng khối <code>lifecycle { ignore_changes = [...] }</code> để ngăn Terraform cập nhật các thuộc tính không mong muốn (ví dụ: hash của tệp zip Lambda).</li>
+            </ul>
+            <h3>Các vấn đề thường gặp:</h3>
+            <ol>
+                <li>Sử dụng sai/lộn xộn không gian làm việc (workspaces).</li>
+                <li>Sử dụng các giá trị được gán cứng (hard-coded values).</li>
+                <li>Không tuân theo quy ước đặt tên.</li>
+                <li>Việc đổi tên module/tài nguyên gây ra tình trạng phá hủy và tạo lại.</li>
+                <li>Lỗi cú pháp hoặc lỗi kiểu dữ liệu (ví dụ: mong đợi `map` nhưng nhận được `list`).</li>
+                <li>Hết thời gian chờ (timeouts) khi tạo các tài nguyên lớn.</li>
+                <li>Vấn đề về quyền hạn (permissions) của tài khoản dùng để chạy Terraform.</li>
+            </ol>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.main-section');
+            const navLinks = document.querySelectorAll('#navbar a');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-30% 0px -70% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
