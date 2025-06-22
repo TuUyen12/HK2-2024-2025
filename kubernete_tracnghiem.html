@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Trắc Nghiệm Kiến Thức Kubernetes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .correct-answer {
+            color: #22c55e; /* green-500 */
+            font-weight: 500;
+        }
+        .incorrect-answer {
+            color: #ef4444; /* red-500 */
+        }
+        .explanation {
+            background-color: #f8fafc; /* slate-50 */
+            border-left: 4px solid #f59e0b; /* amber-500 */
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #475569; /* slate-600 */
+        }
+        /* Style for radio buttons */
+        input[type="radio"]:checked + label {
+            border-color: #3b82f6; /* blue-500 */
+            background-color: #eff6ff; /* blue-50 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto max-w-4xl p-4 sm:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Bài Trắc Nghiệm Kiến Thức Kubernetes</h1>
+            <p class="text-slate-600 mt-2">Hãy kiểm tra hiểu biết của bạn về K8s!</p>
+        </header>
+
+        <div id="quiz-container" class="space-y-6">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <div class="mt-8 text-center">
+            <button id="submit-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed">
+                Nộp bài
+            </button>
+        </div>
+
+        <div id="result-container" class="mt-8 text-center bg-white p-6 rounded-lg shadow-lg hidden">
+            <h2 class="text-2xl font-bold text-slate-900">Kết quả của bạn</h2>
+            <p id="score" class="text-4xl font-bold my-4"></p>
+            <p id="score-message" class="text-slate-600"></p>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "1. Thành phần nào trong Master Node chịu trách nhiệm lưu trữ toàn bộ dữ liệu và trạng thái của cluster Kubernetes dưới dạng key-value?",
+                options: { A: "API Server", B: "Scheduler", C: "ETCD", D: "Controller Manager" },
+                correctAnswer: "C",
+                explanation: "ETCD là kho lưu trữ key-value phân tán, đáng tin cậy được Kubernetes sử dụng để lưu trữ tất cả dữ liệu dùng để quản lý trạng thái của cluster."
+            },
+            {
+                question: "2. Khi một Pod mới được tạo và đang ở trạng thái `PENDING`, thành phần nào sẽ quyết định gán Pod đó vào một Worker Node cụ thể?",
+                options: { A: "Kubelet", B: "Scheduler", C: "Kube-proxy", D: "Controller Manager" },
+                correctAnswer: "B",
+                explanation: "Scheduler chịu trách nhiệm tìm kiếm các Pod mới và gán chúng cho các Node phù hợp dựa trên các yêu cầu tài nguyên, chính sách, v.v."
+            },
+            {
+                question: "3. Tác nhân chạy trên mỗi Worker Node, chịu trách nhiệm tương tác với Master Node và đảm bảo các container được chạy trong Pod là gì?",
+                options: { A: "Docker", B: "Kube-proxy", C: "Kubelet", D: "ETCD" },
+                correctAnswer: "C",
+                explanation: "Kubelet là tác nhân chính trên mỗi worker node, nó nhận chỉ thị từ API Server và quản lý vòng đời của các container trên node đó."
+            },
+            {
+                question: "4. Lệnh `kubectl` nào sau đây được dùng để tạo một Pod tên `my-app` sử dụng image `busybox` và hiển thị định nghĩa YAML của nó ra màn hình mà *không* thực sự tạo Pod trong cluster?",
+                options: { A: "`kubectl create pod my-app --image=busybox -o yaml`", B: "`kubectl run my-app --image=busybox --dry-run=client -o yaml`", C: "`kubectl apply -f my-app.yaml --dry-run=server`", D: "`kubectl get pod my-app --image=busybox -o yaml`" },
+                correctAnswer: "B",
+                explanation: "Tùy chọn `--dry-run=client` ngăn lệnh thực thi trên cluster, và `-o yaml` định dạng đầu ra thành YAML. Lệnh `run` là một cách nhanh để tạo tài nguyên."
+            },
+            {
+                question: "5. Bạn muốn xem địa chỉ IP và Node mà các Pod đang chạy trên đó. Bạn sẽ sử dụng lệnh nào?",
+                options: { A: "`kubectl get pods`", B: "`kubectl describe pods`", C: "`kubectl get pods -o wide`", D: "`kubectl logs pods`" },
+                correctAnswer: "C",
+                explanation: "Tùy chọn `-o wide` (hoặc `--output=wide`) cung cấp thêm các cột thông tin, bao gồm IP của Pod và NODE mà nó đang chạy."
+            },
+            {
+                question: "6. Để tăng số lượng bản sao (replicas) của một Deployment có tên `nginx-deployment` lên 5, bạn sử dụng lệnh nào?",
+                options: { A: "`kubectl edit deployment nginx-deployment --replicas=5`", B: "`kubectl update deployment nginx-deployment --replicas=5`", C: "`kubectl apply deployment nginx-deployment --replicas=5`", D: "`kubectl scale deployment nginx-deployment --replicas=5`" },
+                correctAnswer: "D",
+                explanation: "Lệnh `kubectl scale` là lệnh chuyên dụng và nhanh nhất để thay đổi số lượng replicas của một Deployment, ReplicaSet, hoặc StatefulSet."
+            },
+            {
+                question: "7. Sự khác biệt chính giữa `kubectl create -f file.yml` và `kubectl apply -f file.yml` là gì?",
+                options: { A: "`create` chỉ dùng cho Pods, `apply` dùng cho Deployments.", B: "`create` sẽ báo lỗi nếu tài nguyên đã tồn tại, trong khi `apply` sẽ cập nhật tài nguyên nếu nó đã tồn tại.", C: "`apply` là lệnh cũ, `create` là lệnh mới hơn.", D: "`create` có thể tạo nhiều tài nguyên cùng lúc, `apply` thì không." },
+                correctAnswer: "B",
+                explanation: "`create` là lệnh mệnh lệnh (imperative) sẽ thất bại nếu đối tượng đã có. `apply` là lệnh khai báo (declarative) sẽ tạo mới nếu chưa có hoặc cập nhật nếu đã có, dựa trên sự khác biệt trong file cấu hình."
+            },
+            {
+                question: "8. Loại Service nào mặc định chỉ expose ứng dụng bên trong cluster và không thể truy cập từ bên ngoài?",
+                options: { A: "NodePort", B: "LoadBalancer", C: "ClusterIP", D: "Ingress" },
+                correctAnswer: "C",
+                explanation: "ClusterIP là loại Service mặc định. Nó tạo ra một địa chỉ IP nội bộ, chỉ có thể truy cập từ bên trong cluster, phù hợp cho giao tiếp giữa các microservice."
+            },
+            {
+                question: "9. Khi sử dụng Service loại `NodePort`, cổng được mở trên các Node phải nằm trong dải nào?",
+                options: { A: "0-1024", B: "8000-9000", C: "30000-32767", D: "Bất kỳ cổng nào còn trống" },
+                correctAnswer: "C",
+                explanation: "Mặc định, Kubernetes dành riêng dải cổng 30000-32767 cho các dịch vụ NodePort để tránh xung đột với các dịch vụ hệ thống khác."
+            },
+            {
+                question: "10. Đâu là đơn vị triển khai nhỏ nhất có thể được tạo và quản lý trong Kubernetes?",
+                options: { A: "Container", B: "Node", C: "Pod", D: "Deployment" },
+                correctAnswer: "C",
+                explanation: "Kubernetes không chạy trực tiếp các container. Thay vào đó, nó đóng gói một hoặc nhiều container vào một cấu trúc gọi là Pod. Pod là đơn vị cơ bản nhất."
+            },
+            {
+                question: "11. Mục đích của `Init Container` trong một Pod là gì?",
+                options: { A: "Để chạy các tác vụ dọn dẹp sau khi container chính dừng lại.", B: "Để chạy song song với container chính nhằm tăng hiệu suất.", C: "Để chạy và phải hoàn thành thành công trước khi container chính được khởi động.", D: "Để cung cấp một shell tương tác cho việc gỡ lỗi Pod." },
+                correctAnswer: "C",
+                explanation: "Init container được dùng để thực hiện các tác vụ khởi tạo, chẳng hạn như chờ một dịch vụ khác sẵn sàng, chuẩn bị dữ liệu, hoặc cấu hình môi trường trước khi container ứng dụng chính bắt đầu."
+            },
+            {
+                question: "12. Lệnh nào được sử dụng để khôi phục một Deployment về phiên bản trước đó?",
+                options: { A: "`kubectl rollout undo deployment <tên-deployment>`", B: "`kubectl rollout history deployment <tên-deployment> --revert`", C: "`kubectl deploy --revert <tên-deployment>`", D: "`kubectl apply -f old-deployment.yml`" },
+                correctAnswer: "A",
+                explanation: "Lệnh `kubectl rollout undo` cho phép bạn quay trở lại phiên bản (revision) trước đó của một Deployment một cách an toàn."
+            },
+            {
+                question: "13. Cơ chế nào cho phép một Node \"đẩy lùi\" một tập hợp các Pod, không cho chúng lập lịch trên Node đó trừ khi Pod có sự \"cho phép\" đặc biệt?",
+                options: { A: "Node Affinity", B: "Labels và Selectors", C: "Taints và Tolerations", D: "Namespaces" },
+                correctAnswer: "C",
+                explanation: "Taints được gán cho Node, và Tolerations được gán cho Pod. Một Pod chỉ có thể được lập lịch trên một Node có Taint nếu nó có Toleration tương ứng."
+            },
+            {
+                question: "14. Để xem nhật ký (logs) của tất cả các container trong các Pod có label `app=my-api` và theo dõi chúng theo thời gian thực, bạn dùng lệnh nào?",
+                options: { A: "`kubectl logs -f -l app=my-api`", B: "`kubectl logs -f -l app=my-api --all-containers`", C: "`kubectl attach -l app=my-api --all-containers`", D: "`kubectl describe pods -l app=my-api --logs`" },
+                correctAnswer: "B",
+                explanation: "`-f` để stream (follow), `-l` để chọn theo label, và `--all-containers` là cần thiết khi bạn muốn xem logs từ tất cả các container trong các Pod được chọn, thay vì chỉ container đầu tiên."
+            },
+            {
+                question: "15. Trong chiến lược triển khai `RollingUpdate` của Deployment, tham số `maxSurge` có ý nghĩa gì?",
+                options: { A: "Số lượng Pod tối đa có thể không khả dụng trong quá trình cập nhật.", B: "Số lượng Pod tối đa có thể được tạo thêm ngoài số lượng mong muốn.", C: "Thời gian tối đa cho phép để một Pod mới sẵn sàng.", D: "Tỷ lệ phần trăm Pod cũ bị xóa trước khi tạo Pod mới." },
+                correctAnswer: "B",
+                explanation: "`maxSurge` cho phép hệ thống tạo ra một số lượng Pod mới vượt quá số replicas mong muốn, giúp quá trình cập nhật diễn ra nhanh hơn mà không làm giảm số lượng Pod phục vụ dưới mức cần thiết."
+            },
+            {
+                question: "16. Loại Volume nào trong Kubernetes có vòng đời gắn liền với Pod và sẽ bị xóa vĩnh viễn khi Pod bị xóa, thường được dùng để lưu trữ tạm thời?",
+                options: { A: "`hostPath`", B: "`PersistentVolumeClaim`", C: "`emptyDir`", D: "`nfs`" },
+                correctAnswer: "C",
+                explanation: "Volume `emptyDir` được tạo ra khi Pod được lập lịch trên một Node và tồn tại chừng nào Pod đó còn chạy trên Node đó. Khi Pod bị xóa, dữ liệu trong `emptyDir` cũng bị xóa."
+            },
+            {
+                question: "17. Để chạy một lệnh `ls /app` bên trong một container có tên `web-server` của một Pod tên `my-pod`, bạn sẽ dùng lệnh nào?",
+                options: { A: "`kubectl run my-pod -c web-server -- ls /app`", B: "`kubectl attach my-pod -c web-server --command \"ls /app\"`", C: "`kubectl exec my-pod -c web-server -- ls /app`", D: "`kubectl logs my-pod -c web-server --command \"ls /app\"`" },
+                correctAnswer: "C",
+                explanation: "Lệnh `kubectl exec` được dùng để thực thi một lệnh bên trong một container đang chạy. Tùy chọn `-c` dùng để chỉ định tên container khi Pod có nhiều hơn một container."
+            },
+            {
+                question: "18. Một tài nguyên Ingress cần thành phần nào để có thể hoạt động và thực thi các quy tắc định tuyến?",
+                options: { A: "Một Service loại LoadBalancer", B: "Một Ingress Controller", C: "Một API Gateway", D: "Một Kube-proxy được cấu hình đặc biệt" },
+                correctAnswer: "B",
+                explanation: "Tài nguyên Ingress chỉ là một tập hợp các quy tắc. Cần phải có một Ingress Controller (ví dụ: Nginx, Traefik) đang chạy trong cluster để đọc và thực thi các quy tắc đó, định tuyến lưu lượng truy cập đến các Service phù hợp."
+            },
+            {
+                question: "19. Bạn muốn tất cả các Pod mới được tạo phải chạy trên các node có nhãn `disk=ssd`. Bạn sẽ cấu hình thuộc tính nào trong `PodSpec`?",
+                options: { A: "`nodeName: disk=ssd`", B: "`nodeAffinity`", C: "`tolerations`", D: "`nodeSelector`" },
+                correctAnswer: "D",
+                explanation: "`nodeSelector` là cách đơn giản nhất để ràng buộc Pod với các Node có các nhãn cụ thể. Nó là một map của các cặp key-value."
+            },
+            {
+                question: "20. Khi bạn chạy lệnh `kubectl delete ns dev`, điều gì sẽ xảy ra?",
+                options: { A: "Chỉ namespace `dev` bị xóa, các tài nguyên bên trong nó được chuyển sang namespace `default`.", B: "Lệnh sẽ báo lỗi vì không thể xóa namespace đang hoạt động.", C: "Namespace `dev` và tất cả các tài nguyên (Pods, Deployments, Services,...) bên trong nó sẽ bị xóa.", D: "Namespace `dev` sẽ được đánh dấu là \"terminating\" nhưng không bị xóa cho đến khi các Pod dừng lại." },
+                correctAnswer: "C",
+                explanation: "Việc xóa một Namespace là một hành động có tính hủy diệt. Nó sẽ xóa tất cả các tài nguyên chứa trong namespace đó. Đây là lý do tại sao cần phải cẩn thận khi sử dụng lệnh này."
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz-container');
+        const submitButton = document.getElementById('submit-btn');
+        const resultContainer = document.getElementById('result-container');
+        const scoreElement = document.getElementById('score');
+        const scoreMessageElement = document.getElementById('score-message');
+
+        function buildQuiz() {
+            quizData.forEach((currentQuestion, questionIndex) => {
+                const options = [];
+                for (const optionKey in currentQuestion.options) {
+                    options.push(
+                        `<div class="mt-2">
+                            <label for="q${questionIndex}_${optionKey}" class="block w-full p-4 border-2 border-slate-300 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer">
+                                <input type="radio" name="question${questionIndex}" id="q${questionIndex}_${optionKey}" value="${optionKey}" class="mr-3 align-middle">
+                                <span class="align-middle">${optionKey}: ${currentQuestion.options[optionKey]}</span>
+                            </label>
+                        </div>`
+                    );
+                }
+
+                const questionHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-md question-wrapper" data-question-index="${questionIndex}">
+                        <p class="font-semibold text-lg">${currentQuestion.question}</p>
+                        <div class="options-container mt-4">${options.join('')}</div>
+                        <div class="result mt-4"></div>
+                    </div>`;
+                
+                quizContainer.innerHTML += questionHTML;
+            });
+        }
+
+        function showResults() {
+            let score = 0;
+            const questionWrappers = document.querySelectorAll('.question-wrapper');
+            const allRadios = document.querySelectorAll('input[type="radio"]');
+
+            questionWrappers.forEach((questionWrapper) => {
+                const questionIndex = parseInt(questionWrapper.dataset.questionIndex);
+                const currentQuestion = quizData[questionIndex];
+                const resultDiv = questionWrapper.querySelector('.result');
+                
+                const selector = `input[name=question${questionIndex}]:checked`;
+                const userAnswerNode = document.querySelector(selector);
+                
+                if (userAnswerNode) {
+                    const userAnswer = userAnswerNode.value;
+                    if (userAnswer === currentQuestion.correctAnswer) {
+                        score++;
+                        resultDiv.innerHTML = `<p class="correct-answer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Đúng!
+                        </p>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <p class="incorrect-answer font-semibold">Sai.</p>
+                            <p class="mt-2">Đáp án đúng là: <strong class="correct-answer">${currentQuestion.correctAnswer}. ${currentQuestion.options[currentQuestion.correctAnswer]}</strong></p>
+                            <div class="explanation"><strong>Giải thích:</strong> ${currentQuestion.explanation}</div>
+                        `;
+                    }
+                } else {
+                     resultDiv.innerHTML = `
+                        <p class="incorrect-answer font-semibold">Bạn chưa trả lời câu này.</p>
+                        <p class="mt-2">Đáp án đúng là: <strong class="correct-answer">${currentQuestion.correctAnswer}. ${currentQuestion.options[currentQuestion.correctAnswer]}</strong></p>
+                        <div class="explanation"><strong>Giải thích:</strong> ${currentQuestion.explanation}</div>
+                    `;
+                }
+            });
+
+            // Disable all inputs after submission
+            allRadios.forEach(radio => radio.disabled = true);
+            submitButton.disabled = true;
+            submitButton.innerHTML = "Đã nộp bài";
+
+            // Show score
+            scoreElement.textContent = `${score} / ${quizData.length}`;
+            let message = "Cần cố gắng hơn nhé!";
+            if (score > 18) {
+                message = "Xuất sắc! Bạn là một chuyên gia Kubernetes!";
+                scoreElement.className = "text-4xl font-bold my-4 text-emerald-500";
+            } else if (score > 14) {
+                message = "Rất tốt! Bạn đã nắm vững kiến thức.";
+                scoreElement.className = "text-4xl font-bold my-4 text-green-500";
+            } else if (score > 10) {
+                 message = "Khá tốt! Hãy ôn tập thêm một chút nữa nhé.";
+                scoreElement.className = "text-4xl font-bold my-4 text-amber-500";
+            } else {
+                scoreElement.className = "text-4xl font-bold my-4 text-red-500";
+            }
+            scoreMessageElement.textContent = message;
+            resultContainer.classList.remove('hidden');
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Build the quiz on page load
+        buildQuiz();
+
+        // Add event listener to submit button
+        submitButton.addEventListener('click', showResults);
+    </script>
+
+</body>
+</html>
