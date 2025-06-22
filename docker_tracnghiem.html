@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài trắc nghiệm kiến thức Docker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .question-card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .option {
+            display: block;
+            background-color: #374151;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option:hover {
+            background-color: #4b5563;
+        }
+        input[type="radio"] {
+            display: none;
+        }
+        input[type="radio"]:checked + label {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        .correct-answer {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid #34d399;
+        }
+         .incorrect-answer {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid #f87171;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            color: #9ca3af;
+            font-size: 0.9em;
+        }
+        #submit-btn {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        #submit-btn:hover {
+            background-color: #1d4ed8;
+        }
+        #submit-btn:disabled {
+            background-color: #4b5563;
+            cursor: not-allowed;
+        }
+        #score-container {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: none; /* Hidden by default */
+        }
+        code {
+            background-color: #4b5563;
+            color: #facc15;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white">Bài trắc nghiệm kiến thức Docker</h1>
+            <p class="text-lg text-gray-400 mt-2">Hãy chọn đáp án đúng cho mỗi câu hỏi.</p>
+        </header>
+
+        <div id="score-container"></div>
+
+        <form id="quiz-form">
+            <!-- Questions will be injected here by JavaScript -->
+        </form>
+
+        <button id="submit-btn">Nộp bài</button>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "1. Đâu là sự khác biệt chính giữa Docker Container và Máy ảo (VM)?",
+                options: {
+                    A: "Container chạy hệ điều hành riêng, còn VM chia sẻ hệ điều hành với host.",
+                    B: "Container cô lập ở cấp độ hệ điều hành và chia sẻ kernel của host, trong khi VM ảo hóa phần cứng và có hệ điều hành riêng.",
+                    C: "Container có kích thước lớn hơn và khởi động chậm hơn VM.",
+                    D: "Container không thể di chuyển, còn VM có thể di chuyển dễ dàng."
+                },
+                answer: "B",
+                explanation: "Container nhẹ hơn và nhanh hơn vì chúng chia sẻ kernel của hệ điều hành máy chủ và chỉ đóng gói ứng dụng cùng các thư viện. Ngược lại, VM ảo hóa toàn bộ một máy tính, bao gồm cả hệ điều hành riêng, nên nặng hơn và khởi động chậm hơn."
+            },
+            {
+                question: "2. Lệnh nào dùng để chạy một container ở chế độ nền (detached mode)?",
+                options: {
+                    A: "<code>docker run --background nginx</code>",
+                    B: "<code>docker run -it nginx</code>",
+                    C: "<code>docker run --detach nginx</code> hoặc <code>docker run -d nginx</code>",
+                    D: "<code>docker start --detached nginx</code>"
+                },
+                answer: "C",
+                explanation: "Cờ <code>--detach</code> hoặc viết tắt là <code>-d</code> được sử dụng để chạy một container trong chế độ nền, giải phóng terminal của bạn và trả về ID của container."
+            },
+            {
+                question: "3. Trong Dockerfile, lệnh nào được sử dụng để xác định image cơ sở?",
+                options: {
+                    A: "<code>BASEIMAGE</code>",
+                    B: "<code>RUN</code>",
+                    C: "<code>START</code>",
+                    D: "<code>FROM</code>"
+                },
+                answer: "D",
+                explanation: "Lệnh <code>FROM</code> luôn là lệnh đầu tiên trong một Dockerfile, nó chỉ định image cơ sở mà image của bạn sẽ được xây dựng trên đó."
+            },
+            {
+                question: "4. Cơ chế \"copy-on-write\" (COW) trong Docker có nghĩa là gì?",
+                options: {
+                    A: "Mọi thay đổi trong container được ghi trực tiếp vào image.",
+                    B: "Khi container cần thay đổi một tệp từ image, nó sẽ sao chép tệp đó lên lớp đọc-ghi riêng của container trước khi sửa đổi.",
+                    C: "Container không thể thay đổi bất kỳ tệp nào từ image.",
+                    D: "Chỉ có thể ghi dữ liệu mới vào container, không thể sửa đổi dữ liệu có sẵn."
+                },
+                answer: "B",
+                explanation: "Copy-on-Write là một cơ chế hiệu quả giúp tiết kiệm không gian. Thay vì sao chép toàn bộ hệ thống tệp, Docker chỉ sao chép các tệp khi chúng được sửa đổi, các thay đổi này được lưu trên một lớp ghi riêng biệt của container."
+            },
+            {
+                question: "5. Mục đích chính của Docker Compose là gì?",
+                options: {
+                    A: "Để xây dựng một Docker image duy nhất.",
+                    B: "Để định nghĩa và chạy các ứng dụng đa container như một dịch vụ đơn lẻ.",
+                    C: "Để quản lý mạng Docker.",
+                    D: "Để khởi tạo một cụm Docker Swarm."
+                },
+                answer: "B",
+                explanation: "Docker Compose là công cụ để định nghĩa và chạy các ứng dụng Docker phức tạp gồm nhiều container (ví dụ: một web server, một database, và một cache) bằng một tệp YAML duy nhất."
+            },
+            {
+                question: "6. Lệnh nào sau đây dùng để liệt kê tất cả các container, bao gồm cả những container đã dừng?",
+                options: {
+                    A: "<code>docker ps</code>",
+                    B: "<code>docker ps -a</code>",
+                    C: "<code>docker list all</code>",
+                    D: "<code>docker images</code>"
+                },
+                answer: "B",
+                explanation: "Lệnh <code>docker ps</code> chỉ liệt kê các container đang chạy. Cờ <code>-a</code> (hoặc <code>--all</code>) sẽ hiển thị tất cả các container, bất kể trạng thái của chúng."
+            },
+            {
+                question: "7. Loại mạng nào được sử dụng để cho phép giao tiếp giữa các container chạy trên các host khác nhau trong một cụm Swarm?",
+                options: {
+                    A: "Bridge",
+                    B: "Host",
+                    C: "Overlay",
+                    D: "None"
+                },
+                answer: "C",
+                explanation: "Mạng Overlay được thiết kế để kết nối các container trên nhiều máy chủ Docker khác nhau, tạo thành một mạng ảo duy nhất trải dài trên toàn bộ cụm Swarm."
+            },
+            {
+                question: "8. Để lưu trữ dữ liệu bền vững và dữ liệu đó sẽ không bị mất khi container bị xóa, bạn nên sử dụng?",
+                options: {
+                    A: "Docker Commit",
+                    B: "Docker Images",
+                    C: "Docker Volumes hoặc Bind Mounts",
+                    D: "Lớp đọc-ghi của container"
+                },
+                answer: "C",
+                explanation: "Volumes và Bind Mounts cho phép dữ liệu tồn tại độc lập với vòng đời của container. Dữ liệu được lưu trữ trên máy chủ host, vì vậy nó sẽ không bị mất khi container bị xóa."
+            },
+            {
+                question: "9. Lệnh nào được dùng để khởi tạo một cụm Docker Swarm và biến node hiện tại thành manager?",
+                options: {
+                    A: "<code>docker swarm create</code>",
+                    B: "<code>docker swarm start --manager</code>",
+                    C: "<code>docker swarm init --advertise-addr &lt;MANAGER_IP&gt;</code>",
+                    D: "<code>docker cluster init</code>"
+                },
+                answer: "C",
+                explanation: "Lệnh <code>docker swarm init</code> sẽ khởi tạo chế độ swarm và biến node hiện tại thành node quản lý (manager) đầu tiên của cụm."
+            },
+            {
+                question: "10. Trong Docker Swarm, \"Service\" là gì?",
+                options: {
+                    A: "Là một node worker trong cụm.",
+                    B: "Là định nghĩa về một ứng dụng, bao gồm image container và số lượng bản sao (replicas) cần chạy.",
+                    C: "Là một mạng overlay.",
+                    D: "Là một bộ cân bằng tải bên ngoài."
+                },
+                answer: "B",
+                explanation: "Một service trong Swarm định nghĩa cách chạy một ứng dụng trên cụm, bao gồm image nào sẽ sử dụng, có bao nhiêu bản sao (tasks) cần chạy, và các cấu hình mạng, cổng..."
+            },
+            {
+                question: "11. Lệnh <code>docker service scale web=10</code> có tác dụng gì?",
+                options: {
+                    A: "Cập nhật image của service \"web\" lên phiên bản 10.",
+                    B: "Thay đổi số lượng bản sao (replicas) của service \"web\" thành 10.",
+                    C: "Giới hạn service \"web\" chỉ sử dụng 10% CPU.",
+                    D: "Xóa service \"web\" sau 10 giây."
+                },
+                answer: "B",
+                explanation: "Lệnh <code>docker service scale</code> được sử dụng để thay đổi số lượng replicas (bản sao) của một service đang chạy trong Swarm, cho phép mở rộng hoặc thu hẹp ứng dụng một cách dễ dàng."
+            },
+            {
+                question: "12. \"Routing Mesh\" trong Docker Swarm có chức năng gì?",
+                options: {
+                    A: "Cho phép mỗi node trong swarm chấp nhận kết nối trên các cổng được publish của bất kỳ service nào và chuyển hướng đến một container đang hoạt động.",
+                    B: "Chỉ cho phép manager node nhận traffic.",
+                    C: "Mã hóa toàn bộ traffic giữa các container.",
+                    D: "Tạo ra một mạng riêng cho từng service."
+                },
+                answer: "A",
+                explanation: "Routing Mesh là một tính năng cân bằng tải nội bộ mạnh mẽ của Swarm. Nó đảm bảo rằng bạn có thể truy cập dịch vụ của mình thông qua cổng đã publish trên BẤT KỲ node nào trong cụm, và Swarm sẽ tự động định tuyến yêu cầu đến một container đang chạy."
+            },
+            {
+                question: "13. Đâu là một nhược điểm của kiến trúc Monolithic được đề cập trong tài liệu?",
+                options: {
+                    A: "Đơn giản để triển khai.",
+                    B: "Gắn kết chặt chẽ (tightly coupled) và khó sửa đổi.",
+                    C: "Chi phí thấp.",
+                    D: "Dễ dàng gỡ lỗi."
+                },
+                answer: "B",
+                explanation: "Trong kiến trúc Monolithic, các thành phần của ứng dụng liên kết chặt chẽ với nhau, làm cho việc sửa đổi một phần nhỏ trở nên khó khăn và rủi ro vì nó có thể ảnh hưởng đến toàn bộ hệ thống."
+            },
+            {
+                question: "14. Lệnh nào dùng để xem logs của một container đang chạy theo thời gian thực?",
+                options: {
+                    A: "<code>docker logs &lt;container_name&gt;</code>",
+                    B: "<code>docker logs -f &lt;container_name&gt;</code>",
+                    C: "<code>docker status -l &lt;container_name&gt;</code>",
+                    D: "<code>docker attach --logs &lt;container_name&gt;</code>"
+                },
+                answer: "B",
+                explanation: "Cờ <code>-f</code> (hoặc <code>--follow</code>) sẽ \"theo dõi\" đầu ra log của container, hiển thị các log mới ngay khi chúng được tạo ra, tương tự như lệnh <code>tail -f</code> trong Linux."
+            },
+            {
+                question: "15. Lệnh <code>docker exec -it my-container bash</code> dùng để làm gì?",
+                options: {
+                    A: "Khởi động một container mới tên là \"my-container\" với tiến trình bash.",
+                    B: "Truy cập vào shell (bash) của container \"my-container\" đang chạy.",
+                    C: "Xóa container \"my-container\".",
+                    D: "Commit các thay đổi của container \"my-container\" thành image mới."
+                },
+                answer: "B",
+                explanation: "Lệnh <code>docker exec</code> cho phép bạn chạy một lệnh bên trong một container đang chạy. Cờ <code>-it</code> mở một phiên tương tác (interactive terminal), cho phép bạn truy cập vào shell của container."
+            },
+            {
+                question: "16. Sự khác biệt chính giữa <code>CMD</code> và <code>ENTRYPOINT</code> trong Dockerfile là gì?",
+                options: {
+                    A: "Không có sự khác biệt, chúng có thể dùng thay thế cho nhau.",
+                    B: "<code>CMD</code> xác định lệnh mặc định, có thể bị ghi đè khi chạy <code>docker run</code>, còn <code>ENTRYPOINT</code> cấu hình container sẽ chạy như một tệp thực thi.",
+                    C: "<code>ENTRYPOINT</code> chạy trước <code>CMD</code>.",
+                    D: "Chỉ có thể sử dụng <code>CMD</code>, <code>ENTRYPOINT</code> đã lỗi thời."
+                },
+                answer: "B",
+                explanation: "<code>ENTRYPOINT</code> xác định lệnh chính sẽ được thực thi, trong khi <code>CMD</code> cung cấp các tham số mặc định cho <code>ENTRYPOINT</code>. Bạn có thể dễ dàng ghi đè <code>CMD</code> khi chạy container, nhưng để ghi đè <code>ENTRYPOINT</code> thì phức tạp hơn."
+            },
+            {
+                question: "17. Docker Stacks được sử dụng để làm gì?",
+                options: {
+                    A: "Để chạy một container duy nhất với cấu hình phức tạp.",
+                    B: "Là phiên bản \"production grade\" của Docker Compose, dùng để triển khai một ngăn xếp ứng dụng hoàn chỉnh cho swarm.",
+                    C: "Để giám sát hiệu năng của các container.",
+                    D: "Để quản lý các Docker image."
+                },
+                answer: "B",
+                explanation: "Docker Stacks mở rộng Docker Compose để sử dụng trong môi trường Swarm, cho phép bạn quản lý và triển khai toàn bộ ứng dụng đa dịch vụ trên một cụm một cách dễ dàng."
+            },
+            {
+                question: "18. Khi sử dụng mạng <code>host</code>, điều gì sẽ xảy ra?",
+                options: {
+                    A: "Container nhận được một IP riêng trong mạng bridge.",
+                    B: "Container sẽ không có kết nối mạng.",
+                    C: "Container chia sẻ trực tiếp network namespace với máy chủ host, có thể gây xung đột cổng.",
+                    D: "Container được kết nối vào mạng overlay."
+                },
+                answer: "C",
+                explanation: "Mạng <code>host</code> loại bỏ sự cô lập mạng giữa container và máy chủ. Container sẽ không có IP riêng mà sử dụng trực tiếp IP của máy chủ, điều này có thể gây xung đột nếu nhiều container cùng cố gắng sử dụng một cổng."
+            },
+            {
+                question: "19. Để sử dụng một custom image trong cụm swarm, bạn cần làm gì?",
+                options: {
+                    A: "Chỉ cần build image trên node manager.",
+                    B: "Sao chép Dockerfile vào tất cả các worker node.",
+                    C: "Đẩy image lên một registry (như Docker Hub) để tất cả các node có thể kéo về, hoặc đảm bảo image có sẵn cục bộ trên tất cả các node.",
+                    D: "Docker Swarm tự động chia sẻ image giữa các node."
+                },
+                answer: "C",
+                explanation: "Mỗi node trong Swarm cần có quyền truy cập vào image để có thể chạy container. Cách phổ biến nhất là đẩy image lên một registry chung, từ đó tất cả các node có thể kéo (pull) image về."
+            },
+            {
+                question: "20. Tại sao cần một bộ cân bằng tải bên ngoài (External Load Balancer) như HAProxy cho Docker Swarm?",
+                options: {
+                    A: "Vì routing mesh của Swarm không hoạt động.",
+                    B: "Để cung cấp một điểm cuối chung (ví dụ: tên DNS) cho người dùng cuối truy cập ứng dụng, thay vì phải truy cập qua IP của từng node.",
+                    C: "Để mã hóa lưu lượng truy cập.",
+                    D: "Để tăng số lượng replicas của dịch vụ."
+                },
+                answer: "B",
+                explanation: "Mặc dù Routing Mesh của Swarm rất mạnh mẽ, người dùng cuối không nên truy cập ứng dụng qua IP của một node cụ thể (vì node đó có thể bị lỗi). Một bộ cân bằng tải bên ngoài cung cấp một địa chỉ duy nhất, ổn định và phân phối lưu lượng đến các node khỏe mạnh trong cụm."
+            },
+        ];
+
+        const quizForm = document.getElementById('quiz-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const scoreContainer = document.getElementById('score-container');
+
+        // Function to build the quiz HTML
+        function buildQuiz() {
+            const output = [];
+            quizData.forEach((currentQuestion, questionNumber) => {
+                const options = [];
+                for (const letter in currentQuestion.options) {
+                    options.push(
+                        `<label class="option" for="q${questionNumber}_${letter}">
+                            <input type="radio" name="question${questionNumber}" id="q${questionNumber}_${letter}" value="${letter}">
+                            <strong>${letter}.</strong> ${currentQuestion.options[letter]}
+                        </label>`
+                    );
+                }
+
+                output.push(
+                    `<div class="question-card" id="card${questionNumber}">
+                        <div class="font-semibold text-lg mb-4 text-white">${currentQuestion.question}</div>
+                        <div class="options">${options.join('')}</div>
+                        <div class="result" id="result${questionNumber}"></div>
+                    </div>`
+                );
+            });
+            quizForm.innerHTML = output.join('');
+        }
+        
+        // Function to show results
+        function showResults() {
+            let numCorrect = 0;
+            const allRadios = quizForm.querySelectorAll('input[type="radio"]');
+
+            quizData.forEach((currentQuestion, questionNumber) => {
+                const resultContainer = document.getElementById(`result${questionNumber}`);
+                const cardContainer = document.getElementById(`card${questionNumber}`);
+                const selector = `input[name=question${questionNumber}]:checked`;
+                const userAnswerNode = quizForm.querySelector(selector);
+                
+                resultContainer.innerHTML = ''; // Clear previous result
+
+                if (userAnswerNode) {
+                    const userAnswer = userAnswerNode.value;
+                    const correctOptionLabel = userAnswerNode.parentElement.parentElement.querySelector(`#q${questionNumber}_${currentQuestion.answer}`).parentElement;
+                    const userAnswerLabel = userAnswerNode.parentElement;
+                    
+                    if (userAnswer === currentQuestion.answer) {
+                        numCorrect++;
+                        resultContainer.innerHTML = `
+                          <div class="correct-answer flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Đúng!</span>
+                          </div>
+                        `;
+                        userAnswerLabel.classList.add('border-2', 'border-green-500');
+
+                    } else {
+                        resultContainer.innerHTML = `
+                          <div class="incorrect-answer flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <span>Sai rồi!</span>
+                          </div>
+                          <div class="explanation mt-2">
+                            <strong>Đáp án đúng: ${currentQuestion.answer}.</strong> ${currentQuestion.explanation}
+                          </div>
+                        `;
+                         userAnswerLabel.classList.add('border-2', 'border-red-500');
+                         correctOptionLabel.classList.add('border-2', 'border-green-500', 'bg-green-500/20');
+                    }
+                } else {
+                    // If no answer was selected
+                     resultContainer.innerHTML = `
+                          <div class="incorrect-answer flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <span>Bạn chưa trả lời câu này!</span>
+                          </div>
+                          <div class="explanation mt-2">
+                            <strong>Đáp án đúng: ${currentQuestion.answer}.</strong> ${currentQuestion.explanation}
+                          </div>
+                        `;
+                    const correctOptionLabel = document.getElementById(`q${questionNumber}_${currentQuestion.answer}`).parentElement;
+                    correctOptionLabel.classList.add('border-2', 'border-green-500', 'bg-green-500/20');
+
+                }
+            });
+
+            scoreContainer.innerHTML = `Bạn đã trả lời đúng ${numCorrect}/${quizData.length} câu!`;
+            scoreContainer.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Disable all inputs
+            submitBtn.disabled = true;
+            allRadios.forEach(radio => radio.disabled = true);
+            const allLabels = quizForm.querySelectorAll('.option');
+            allLabels.forEach(label => label.classList.add('cursor-not-allowed', 'opacity-70'));
+        }
+
+        // Event Listeners
+        submitBtn.addEventListener('click', (event) => {
+            event.preventDefault(); // Prevent form from submitting the traditional way
+            showResults();
+        });
+
+        // Initialize the quiz
+        buildQuiz();
+    </script>
+
+</body>
+</html>
