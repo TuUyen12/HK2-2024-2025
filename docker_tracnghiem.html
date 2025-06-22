@@ -34,7 +34,8 @@
             border-radius: 0.5rem;
             margin-bottom: 0.5rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s;
+            border: 2px solid transparent; 
         }
         .option:hover {
             background-color: #4b5563;
@@ -42,10 +43,11 @@
         input[type="radio"] {
             display: none;
         }
-        input[type="radio"]:checked + label {
+        /* THAY ĐỔI: Sử dụng class '.selected' thay vì pseudo-class ':checked' để JS kiểm soát */
+        .option.selected {
             background-color: #3b82f6;
             color: white;
-            border-color: #2563eb;
+            border-color: #60a5fa;
         }
         .result {
             margin-top: 1rem;
@@ -383,30 +385,27 @@
 
             quizData.forEach((currentQuestion, questionNumber) => {
                 const resultContainer = document.getElementById(`result${questionNumber}`);
-                const cardContainer = document.getElementById(`card${questionNumber}`);
                 const selector = `input[name=question${questionNumber}]:checked`;
                 const userAnswerNode = quizForm.querySelector(selector);
                 
-                resultContainer.innerHTML = ''; // Clear previous result
+                resultContainer.innerHTML = ''; 
 
                 if (userAnswerNode) {
                     const userAnswer = userAnswerNode.value;
                     const correctOptionLabel = userAnswerNode.parentElement.parentElement.querySelector(`#q${questionNumber}_${currentQuestion.answer}`).parentElement;
-                    const userAnswerLabel = userAnswerNode.parentElement;
                     
                     if (userAnswer === currentQuestion.answer) {
                         numCorrect++;
                         resultContainer.innerHTML = `
-                          <div class="correct-answer flex items-center">
+                          <div class="correct-answer flex items-center p-3 rounded-md">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             <span>Đúng!</span>
                           </div>
                         `;
-                        userAnswerLabel.classList.add('border-2', 'border-green-500');
-
+                        userAnswerNode.parentElement.classList.add('border-green-500');
                     } else {
                         resultContainer.innerHTML = `
-                          <div class="incorrect-answer flex items-center">
+                          <div class="incorrect-answer flex items-center p-3 rounded-md">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             <span>Sai rồi!</span>
                           </div>
@@ -414,13 +413,12 @@
                             <strong>Đáp án đúng: ${currentQuestion.answer}.</strong> ${currentQuestion.explanation}
                           </div>
                         `;
-                         userAnswerLabel.classList.add('border-2', 'border-red-500');
-                         correctOptionLabel.classList.add('border-2', 'border-green-500', 'bg-green-500/20');
+                         userAnswerNode.parentElement.classList.add('border-red-500');
+                         correctOptionLabel.classList.add('border-green-500', 'bg-green-500/20');
                     }
                 } else {
-                    // If no answer was selected
                      resultContainer.innerHTML = `
-                          <div class="incorrect-answer flex items-center">
+                          <div class="incorrect-answer flex items-center p-3 rounded-md">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             <span>Bạn chưa trả lời câu này!</span>
                           </div>
@@ -429,8 +427,7 @@
                           </div>
                         `;
                     const correctOptionLabel = document.getElementById(`q${questionNumber}_${currentQuestion.answer}`).parentElement;
-                    correctOptionLabel.classList.add('border-2', 'border-green-500', 'bg-green-500/20');
-
+                    correctOptionLabel.classList.add('border-green-500', 'bg-green-500/20');
                 }
             });
 
@@ -438,21 +435,50 @@
             scoreContainer.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Disable all inputs
             submitBtn.disabled = true;
-            allRadios.forEach(radio => radio.disabled = true);
+            quizForm.removeEventListener('click', handleOptionClick);
             const allLabels = quizForm.querySelectorAll('.option');
-            allLabels.forEach(label => label.classList.add('cursor-not-allowed', 'opacity-70'));
+            allLabels.forEach(label => label.classList.add('cursor-not-allowed'));
+            allLabels.forEach(label => label.classList.remove('hover:bg-gray-700'));
+        }
+        
+        // THAY ĐỔI: Thêm hàm xử lý logic click
+        function handleOptionClick(e) {
+            const targetLabel = e.target.closest('.option');
+            if (!targetLabel) return;
+        
+            e.preventDefault();
+
+            const radioInput = targetLabel.querySelector('input[type="radio"]');
+            const questionName = radioInput.name;
+            const allOptionsForQuestion = quizForm.querySelectorAll(`input[name="${questionName}"]`);
+
+            if (targetLabel.classList.contains('selected')) {
+                // Nếu click vào đáp án đã chọn -> hủy chọn
+                targetLabel.classList.remove('selected');
+                radioInput.checked = false;
+            } else {
+                // Nếu click vào đáp án mới
+                // 1. Bỏ chọn tất cả các đáp án khác trong câu hỏi
+                allOptionsForQuestion.forEach(input => {
+                    input.parentElement.classList.remove('selected');
+                });
+                // 2. Chọn đáp án vừa click
+                targetLabel.classList.add('selected');
+                radioInput.checked = true;
+            }
         }
 
         // Event Listeners
         submitBtn.addEventListener('click', (event) => {
-            event.preventDefault(); // Prevent form from submitting the traditional way
+            event.preventDefault(); 
             showResults();
         });
-
+        
         // Initialize the quiz
         buildQuiz();
+        // THAY ĐỔI: Gán sự kiện click cho toàn bộ form
+        quizForm.addEventListener('click', handleOptionClick);
     </script>
 
 </body>
